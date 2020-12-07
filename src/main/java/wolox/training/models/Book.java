@@ -6,36 +6,69 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+/**
+ * This class is used to have the model of a Book
+ */
 @Entity
 public class Book {
 
+    /**
+     * Id of the book
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    /**
+     * Genre of the book
+     */
     private String genre;
 
+    /**
+     * Author of the book
+     */
     @Column(nullable = false)
     private String author;
 
+    /**
+     * Image of the book
+     */
     @Column(nullable = false)
     private String image;
 
+    /**
+     * Title of the book
+     */
     @Column(nullable = false)
     private String title;
 
+    /**
+     * Subtitle of the book
+     */
     @Column(nullable = false)
     private String subtitle;
 
+    /**
+     * Publisher of the book
+     */
     @Column(nullable = false)
     private String publisher;
 
+    /**
+     * Year of the book
+     */
     @Column(nullable = false)
     private String year;
 
+    /**
+     * Pages of the book
+     */
     @Column(nullable = false)
     private Integer pages;
 
+    /**
+     * International Standard Book Number of the book
+     */
     @Column(nullable = false)
     private String isbn;
 
