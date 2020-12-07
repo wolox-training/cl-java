@@ -45,7 +45,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable("id") Integer id) {
+    public ResponseEntity<Book> getBookById(@PathVariable("id") Long id) {
         Optional<Book> response = bookRepository.findById(id);
         if(response.isPresent()) {
             return ResponseEntity.ok(response.get());
@@ -71,7 +71,7 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Book> updateBook(@PathVariable("id") Integer id,
+    public ResponseEntity<Book> updateBook(@PathVariable("id") Long id,
             @RequestBody Book bookToUpdate) {
         if (bookToUpdate.getId()!=id) {
             throw new BookIdMismatchException("Book Id mismatched");
@@ -86,7 +86,7 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBookById (@PathVariable("id") Integer id) {
+    public ResponseEntity<String> deleteBookById (@PathVariable("id") Long id) {
         Optional<Book> isBookCreated = bookRepository.findById(id);
         if (isBookCreated.isPresent()) {
             bookRepository.deleteById(id);
