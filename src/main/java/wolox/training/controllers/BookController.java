@@ -14,13 +14,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import wolox.training.exceptions.responses.BookIdMismatchException;
+import wolox.training.exceptions.responses.BookNotFoundException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 
 @Controller
 @RequestMapping("/api/training/books")
 public class BookController {
-
+    private static final String MSG = "Book not found";
     @Autowired
     private BookRepository bookRepository;
 
@@ -48,7 +50,7 @@ public class BookController {
         if(response.isPresent()) {
             return ResponseEntity.ok(response.get());
         } else {
-            return ResponseEntity.notFound().build();
+            throw new BookNotFoundException(MSG);
         }
     }
 
@@ -58,7 +60,7 @@ public class BookController {
         if (response.isPresent()) {
             return ResponseEntity.ok(response.get());
         } else {
-            return ResponseEntity.notFound().build();
+            throw new BookNotFoundException(MSG);
         }
     }
 
@@ -71,12 +73,15 @@ public class BookController {
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable("id") Integer id,
             @RequestBody Book bookToUpdate) {
+        if (bookToUpdate.getId()!=id) {
+            throw new BookIdMismatchException("Book Id mismatched");
+        }
         Optional<Book> isBookCreated = bookRepository.findById(id);
         if (isBookCreated.isPresent()) {
             Book response = bookRepository.save(bookToUpdate);
             return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.notFound().build();
+            throw new BookNotFoundException(MSG);
         }
     }
 
@@ -85,10 +90,10 @@ public class BookController {
         Optional<Book> isBookCreated = bookRepository.findById(id);
         if (isBookCreated.isPresent()) {
             bookRepository.deleteById(id);
-            String response = "Successfully deleted";
+            String response = "Book Successfully deleted";
             return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.notFound().build();
+            throw new BookNotFoundException(MSG);
         }
     }
 }
