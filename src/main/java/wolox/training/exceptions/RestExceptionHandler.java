@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import wolox.training.exceptions.responses.BookAlreadyOwnException;
 import wolox.training.exceptions.responses.BookIdMismatchException;
 import wolox.training.exceptions.responses.BookNotFoundException;
 
@@ -50,5 +51,23 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             WebRequest request) {
         return handleExceptionInternal(ex, ex.getLocalizedMessage(),
                 new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    /**
+     * This method id used to handler exception of {@link BookAlreadyOwnException}
+     * @param ex: Exception reported (Exception)
+     * @param request: Request given by the Web (WebRequest)
+     * @return handExceptionInternal with the following attributes:
+     *  ex (Exception,
+     *  msg (String),
+     *  headers (HttpHeaders),
+     *  response status (HttpStatus.Forbidden),
+     *  request (WebRequest).
+     */
+    @ExceptionHandler({BookAlreadyOwnException.class})
+    public ResponseEntity<Object> handleOwnedBook (Exception ex,
+            WebRequest request) {
+        return handleExceptionInternal(ex, ex.getLocalizedMessage(),
+                new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 }

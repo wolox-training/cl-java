@@ -3,10 +3,10 @@ package wolox.training.exceptions.responses;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-public class BookIdMismatchException extends RuntimeException {
+@ResponseStatus(HttpStatus.FORBIDDEN)
+public class BookAlreadyOwnException extends RuntimeException{
 
-    public BookIdMismatchException(String msg){
+    public BookAlreadyOwnException(String msg) {
         super(msg);
     }
 }
