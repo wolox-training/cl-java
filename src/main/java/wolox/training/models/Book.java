@@ -1,20 +1,11 @@
 package wolox.training.models;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.swing.Action;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 /**
  * This class is used to have the model of a Book
@@ -82,22 +73,12 @@ public class Book {
     @Column(nullable = false)
     private String isbn;
 
-    /**
-     * List of user that have that book on their collection
-     */
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "bookUser",
-            joinColumns = @JoinColumn(name = "bookId"),
-            inverseJoinColumns = @JoinColumn(name = "userId")
-    )
-    private List<User> user = new ArrayList<>();
 
     public Book() {
     }
 
     public Book(Long id, String genre, String author, String image, String title,
-            String subtitle, String publisher, String year, Integer pages, String isbn,
-            List<User> user) {
+            String subtitle, String publisher, String year, Integer pages, String isbn) {
         this.id = id;
         this.genre = genre;
         this.author = author;
@@ -108,7 +89,6 @@ public class Book {
         this.year = year;
         this.pages = pages;
         this.isbn = isbn;
-        this.user = user;
     }
 
     public Long getId() {
@@ -191,11 +171,4 @@ public class Book {
         this.isbn = isbn;
     }
 
-    public List<User> getUser() {
-        return user;
-    }
-
-    public void setUser(List<User> user) {
-        this.user = user;
-    }
 }

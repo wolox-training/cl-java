@@ -68,6 +68,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleOwnedBook (Exception ex,
             WebRequest request) {
         return handleExceptionInternal(ex, ex.getLocalizedMessage(),
-                new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+                new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 }
