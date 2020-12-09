@@ -1,5 +1,6 @@
 package wolox.training.models;
 
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -71,6 +72,7 @@ public class Book {
      */
     @Column(nullable = false)
     private String isbn;
+
 
     public Book() {
     }
@@ -168,4 +170,5 @@ public class Book {
     public void setIsbn(String isbn) {
         this.isbn = isbn;
     }
+
 }
