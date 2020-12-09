@@ -12,6 +12,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import wolox.training.exceptions.responses.BookAlreadyOwnException;
 import wolox.training.exceptions.responses.BookIdMismatchException;
 import wolox.training.exceptions.responses.BookNotFoundException;
+import wolox.training.exceptions.responses.UserIdMismatchException;
+import wolox.training.exceptions.responses.UserNotFoundException;
 
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
@@ -27,10 +29,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
      *  response status (HttpStatus.Not_Found),
      *  request (WebRequest).
      */
-    @ExceptionHandler({ BookNotFoundException.class})
-    protected ResponseEntity<Object> handleNotFound ( Exception ex,
+    @ExceptionHandler({ BookNotFoundException.class,
+                UserNotFoundException.class})
+    protected ResponseEntity<Object> handleBookNotFound ( Exception ex,
             WebRequest request) {
-        return handleExceptionInternal(ex, "Book not found",
+        return handleExceptionInternal(ex, ex.getLocalizedMessage(),
                 new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
     /**
@@ -45,9 +48,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
      *  request (WebRequest).
      */
     @ExceptionHandler({ BookIdMismatchException.class,
+            UserIdMismatchException.class,
             ConstraintViolationException.class,
             DataIntegrityViolationException.class})
-    public ResponseEntity<Object> handleBadRequest(Exception ex,
+    public ResponseEntity<Object> handleBookIdMismatch(Exception ex,
             WebRequest request) {
         return handleExceptionInternal(ex, ex.getLocalizedMessage(),
                 new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
@@ -70,4 +74,5 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, ex.getLocalizedMessage(),
                 new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
+
 }
