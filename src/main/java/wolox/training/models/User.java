@@ -24,7 +24,7 @@ import wolox.training.exceptions.responses.BookAlreadyOwnException;
 @Entity
 @Table(name = "users",
         uniqueConstraints = {
-            @UniqueConstraint(columnNames = "name")
+            @UniqueConstraint(columnNames = "username")
         })
 public class User {
 
