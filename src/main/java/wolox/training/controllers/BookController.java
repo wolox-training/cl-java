@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,16 +13,19 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import wolox.training.exceptions.responses.BookIdMismatchException;
 import wolox.training.exceptions.responses.BookNotFoundException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 
-@Controller
+@RestController
 @RequestMapping("/api/training/books")
 public class BookController {
 
-    private static final String MSG = "Book not found";
+    private static final String MSGNOTFOUND = "Book not found";
+    private static final String MSGIDMISMATCH = "Book Id mismatched";
+    private static final String MSGDELETESUCCESSFULLY = "Book Successfully Deleted";
     @Autowired
     private BookRepository bookRepository;
 
@@ -62,7 +64,7 @@ public class BookController {
      *
      * @param id: Id of the book to be searched (Long).
      * @return ResponseEntity with found {@link Book} with the id passed.
-     * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that a book was not found by the id passed.
+     * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that a {@link Book} was not found by the id passed.
      */
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable("id") Long id) {
@@ -70,7 +72,7 @@ public class BookController {
         if(response.isPresent()) {
             return ResponseEntity.ok(response.get());
         } else {
-            throw new BookNotFoundException(MSG);
+            throw new BookNotFoundException(MSGNOTFOUND);
         }
     }
 
@@ -79,7 +81,7 @@ public class BookController {
      *
      * @param author: Author of the book to be searched (String).
      * @return ResponseEntity with found {@link Book} with the author passed.
-     * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that a book was not found by the author passed.
+     * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that a {@link Book} was not found by the author passed.
      */
     @GetMapping("/byAuthor")
     public ResponseEntity<Book> getBookByAuthor(@RequestParam("author") String author) {
@@ -87,7 +89,7 @@ public class BookController {
         if (response.isPresent()) {
             return ResponseEntity.ok(response.get());
         } else {
-            throw new BookNotFoundException(MSG);
+            throw new BookNotFoundException(MSGNOTFOUND);
         }
     }
 
@@ -104,7 +106,7 @@ public class BookController {
      *     year: Year of the book (String),
      *     pages: Pages of the book (Integer),
      *     isbn: Isbn of the book (String).
-     * @return ResponseEntity with created {@link Book} with the attributes passed in Book model.
+     * @return ResponseEntity with {@link Book} created with the attributes passed in Book model.
      */
     @PostMapping
     public ResponseEntity<Book> addBook (@RequestBody Book bookToSave) {
@@ -127,22 +129,22 @@ public class BookController {
      *           year: Year of the book (String),
      *           pages: Pages of the book (Integer),
      *           isbn: Isbn of the book (String).
-     * @return ResponseEntity with updated {@link Book} with the attributes passed in Book model.
-     * @exception BookIdMismatchException: throw a {@link BookIdMismatchException} in case that the id passed and id of the book made mismatched.
-     * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that a book was not found by the id passed.
+     * @return ResponseEntity with {@link Book} updated with the attributes passed in Book model.
+     * @exception BookIdMismatchException: throw a {@link BookIdMismatchException} in case that the id passed and id of the {@link Book} made mismatched.
+     * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that the {@link Book} was not found by the id passed.
      */
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable("id") Long id,
             @RequestBody Book bookToUpdate) {
-        if (bookToUpdate.getId()!=id) {
-            throw new BookIdMismatchException("Book Id mismatched");
+        if (!bookToUpdate.getId().equals(id)) {
+            throw new BookIdMismatchException(MSGIDMISMATCH);
         }
         Optional<Book> isBookCreated = bookRepository.findById(id);
         if (isBookCreated.isPresent()) {
             Book response = bookRepository.save(bookToUpdate);
             return ResponseEntity.ok(response);
         } else {
-            throw new BookNotFoundException(MSG);
+            throw new BookNotFoundException(MSGNOTFOUND);
         }
     }
 
@@ -151,17 +153,17 @@ public class BookController {
      *
      * @param id: Id of the book who is going to be deleted (Long).
      * @return ResponseEntity with a String message who inform that the book was successfully deleted.
-     * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that a book was not found by the id passed.
+     * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that a {@link Book} was not found by the id passed.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBookById (@PathVariable("id") Long id) {
         Optional<Book> isBookCreated = bookRepository.findById(id);
         if (isBookCreated.isPresent()) {
             bookRepository.deleteById(id);
-            String response = "Book Successfully Deleted";
+            String response = MSGDELETESUCCESSFULLY;
             return ResponseEntity.ok(response);
         } else {
-            throw new BookNotFoundException(MSG);
+            throw new BookNotFoundException(MSGNOTFOUND);
         }
     }
 }

@@ -158,8 +158,8 @@ public class User {
      *     isbn: Isbn of the book (String).
      */
     public void removeBookToUser(Book book) {
-        if(this.library.contains(book)) {
-            this.library.remove(book);
+        if(validateBook(book)) {
+            this.library.remove(getBookFromCollection(book));
         }
     }
 
@@ -193,6 +193,31 @@ public class User {
      * @return Boolean true if the book is already in the library collection, if the book isn't in the library return false
      */
     private Boolean validateBook(Book book) {
-        return this.library.contains(book);
+        Book response = getBookFromCollection(book);
+        return this.library.contains(response);
+    }
+
+    /**
+     * This method is used to get the same reference to book by author in the collection library
+     * @param book: Book model class with the following attributes: (Book)
+     *     id: Id of the book (Long),
+     *     genre: Genre of the book (String),
+     *     author: Author of the book (String),
+     *     image: Image of the book (String),
+     *     title: Title of the book (String),
+     *     subtitle: Subtitle of the book (String),
+     *     publisher: Publisher of the book (String),
+     *     year: Year of the book (String),
+     *     pages: Pages of the book (Integer),
+     *     isbn: Isbn of the book (String).
+     * @return a {@link Book} with the same reference that the book in collection library if there is in there.
+     */
+    private Book getBookFromCollection(Book book) {
+        for (Book b: this.library) {
+            if (b.getAuthor().equals(book.getAuthor())){
+                return b;
+            }
+        }
+        return book;
     }
 }
