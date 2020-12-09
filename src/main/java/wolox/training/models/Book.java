@@ -1,6 +1,5 @@
 package wolox.training.models;
 
-import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -28,7 +27,7 @@ public class Book {
     /**
      * Author of the book
      */
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String author;
 
     /**
