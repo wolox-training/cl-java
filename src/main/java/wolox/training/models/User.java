@@ -15,13 +15,17 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import wolox.training.exceptions.responses.BookAlreadyOwnException;
 
 /**
  * This class is used to have a model of an user
  */
 @Entity
-@Table(name = "users")
+@Table(name = "users",
+        uniqueConstraints = {
+            @UniqueConstraint(columnNames = "username")
+        })
 public class User {
 
     /**
