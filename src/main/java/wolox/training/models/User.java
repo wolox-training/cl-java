@@ -1,10 +1,12 @@
 package wolox.training.models;
 
+import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -97,7 +99,8 @@ public class User {
     }
 
     public void setUsername(String username) {
-        this.username = username;
+
+        this.username = Preconditions.checkNotNull(username, "Username must not be null");
     }
 
     public String getName() {
@@ -105,7 +108,8 @@ public class User {
     }
 
     public void setName(String name) {
-        this.name = name;
+
+        this.name = Preconditions.checkNotNull(name, "Name must not be null");
     }
 
     public LocalDate getBirthdate() {
@@ -113,6 +117,10 @@ public class User {
     }
 
     public void setBirthdate(LocalDate birthdate) {
+        Preconditions.checkNotNull(birthdate, "Birthday must not be null");
+        Date actual = new Date();
+        System.out.println(actual.getYear() + 1900);
+        Preconditions.checkArgument(birthdate.getYear() <= (actual.getYear() + 1900),"Birthday must be less or equal than actual year");
         this.birthdate = birthdate;
     }
 

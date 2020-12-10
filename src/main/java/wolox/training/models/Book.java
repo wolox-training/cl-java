@@ -1,5 +1,6 @@
 package wolox.training.models;
 
+import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import javax.persistence.Column;
@@ -116,6 +117,7 @@ public class Book {
     }
 
     public void setGenre(String genre) {
+
         this.genre = genre;
     }
 
@@ -124,7 +126,7 @@ public class Book {
     }
 
     public void setAuthor(String author) {
-        this.author = author;
+        this.author = Preconditions.checkNotNull(author,"Author must not be null");
     }
 
     public String getImage() {
@@ -132,7 +134,8 @@ public class Book {
     }
 
     public void setImage(String image) {
-        this.image = image;
+
+        this.image = Preconditions.checkNotNull(image, "Image must not be null");
     }
 
     public String getTitle() {
@@ -140,7 +143,8 @@ public class Book {
     }
 
     public void setTitle(String title) {
-        this.title = title;
+
+        this.title = Preconditions.checkNotNull(title, "Title must not be null");
     }
 
     public String getSubtitle() {
@@ -148,7 +152,8 @@ public class Book {
     }
 
     public void setSubtitle(String subtitle) {
-        this.subtitle = subtitle;
+
+        this.subtitle = Preconditions.checkNotNull(subtitle, "Subtitle must not be null");
     }
 
     public String getPublisher() {
@@ -156,7 +161,8 @@ public class Book {
     }
 
     public void setPublisher(String publisher) {
-        this.publisher = publisher;
+
+        this.publisher = Preconditions.checkNotNull(publisher, "Publisher must not be null");
     }
 
     public String getYear() {
@@ -164,7 +170,8 @@ public class Book {
     }
 
     public void setYear(String year) {
-        this.year = year;
+
+        this.year = Preconditions.checkNotNull(year,"Year must not be null");
     }
 
     public Integer getPages() {
@@ -172,7 +179,8 @@ public class Book {
     }
 
     public void setPages(Integer pages) {
-        this.pages = pages;
+
+        this.pages = Preconditions.checkNotNull(pages, "Pages must not be null");
     }
 
     public String getIsbn() {
@@ -180,7 +188,8 @@ public class Book {
     }
 
     public void setIsbn(String isbn) {
-        this.isbn = isbn;
+
+        this.isbn = Preconditions.checkNotNull(isbn, "ISBN must not be null");
     }
 
 }

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import wolox.training.exceptions.responses.UserIdMismatchException;
 import wolox.training.exceptions.responses.UserNotFoundException;
+import wolox.training.exceptions.responses.UsernameAlreadyTakenException;
 import wolox.training.models.Book;
 import wolox.training.models.User;
 import wolox.training.repositories.UserRepository;
@@ -32,6 +33,7 @@ public class UserController {
     private static final String MSGNOTFOUND = "User not found";
     private static final String MSGIDMISMATCHED = "User Id mismatched";
     private static final String MSGSUCCESSFULLYDELETED = "User Successfully Deleted";
+    private static final String MSGUSERNAMETAKEN = "The username is already taken";
 
     @Autowired
     private UserRepository userRepository;
@@ -116,12 +118,16 @@ public class UserController {
      */
     @ApiOperation(value = "Add an user", response = User.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created user")
+            @ApiResponse(code = 200, message = "Successfully created user"),
+            @ApiResponse(code = 409, message = "Username already taken")
     })
     @PostMapping
     public ResponseEntity<User> addUser(
             @ApiParam(value = "User object to be created", required = true)
             @RequestBody User userToSave) {
+        if(userRepository.findByUsername(userToSave.getUsername()).isPresent()) {
+            throw new UsernameAlreadyTakenException(MSGUSERNAMETAKEN);
+        }
         User response = userRepository.save(userToSave);
         return ResponseEntity.ok(response);
     }
@@ -143,7 +149,8 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully updated user"),
             @ApiResponse(code = 400, message = "ID of user an ID passed mismatched"),
-            @ApiResponse(code = 404, message = "User not found")
+            @ApiResponse(code = 404, message = "User not found"),
+            @ApiResponse(code = 409, message = "Username already taken")
     })
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(
@@ -153,6 +160,9 @@ public class UserController {
             @RequestBody User userToUpdate) {
         if(!userToUpdate.getId().equals(id)) {
             throw new UserIdMismatchException(MSGIDMISMATCHED);
+        }
+        if(userRepository.findByUsername(userToUpdate.getUsername()).isPresent()) {
+            throw new UsernameAlreadyTakenException(MSGUSERNAMETAKEN);
         }
         Optional<User> isUserCreated = userRepository.findById(id);
         if (isUserCreated.isPresent()) {
@@ -207,7 +217,6 @@ public class UserController {
      * @exception UserNotFoundException: throw an {@link UserNotFoundException} in case that the {@link User} was not found.
      * @exception wolox.training.exceptions.responses.BookAlreadyOwnException: throw a {@link wolox.training.exceptions.responses.BookAlreadyOwnException}
      *                                                                         In case that the book is already in the {@link User} collection library.
-     *
      */
     @ApiOperation(value = "Add a book to the user library", response = User.class)
     @ApiResponses(value = {
