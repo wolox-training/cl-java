@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import wolox.training.exceptions.responses.BookAuthorAlreadyUsedException;
 import wolox.training.exceptions.responses.BookIdMismatchException;
 import wolox.training.exceptions.responses.BookNotFoundException;
 import wolox.training.models.Book;
@@ -32,6 +33,7 @@ public class BookController {
     private static final String MSGNOTFOUND = "Book not found";
     private static final String MSGIDMISMATCH = "Book Id mismatched";
     private static final String MSGDELETESUCCESSFULLY = "Book Successfully Deleted";
+    private static final String MSGAUTHORUSED = "The author is already used";
 
     @Autowired
     private BookRepository bookRepository;
@@ -136,12 +138,16 @@ public class BookController {
      */
     @ApiOperation(value = "Add a book", response = Book.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created book")
+            @ApiResponse(code = 200, message = "Successfully created book"),
+            @ApiResponse(code = 409, message = "Book author already used")
     })
     @PostMapping
     public ResponseEntity<Book> addBook (
             @ApiParam(value = "Book object to be created", required = true)
             @RequestBody Book bookToSave) {
+        if(bookRepository.findBookByAuthor(bookToSave.getAuthor()).isPresent()){
+            throw new BookAuthorAlreadyUsedException(MSGAUTHORUSED);
+        }
         Book response = bookRepository.save(bookToSave);
         return ResponseEntity.ok(response);
     }
@@ -169,7 +175,8 @@ public class BookController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully updated book"),
             @ApiResponse(code = 400, message = "ID of book and ID passed mismatched"),
-            @ApiResponse(code = 404, message = "Book not found")
+            @ApiResponse(code = 404, message = "Book not found"),
+            @ApiResponse(code = 409, message = "Book author already used")
     })
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(
@@ -179,6 +186,9 @@ public class BookController {
             @RequestBody Book bookToUpdate) {
         if (!bookToUpdate.getId().equals(id)) {
             throw new BookIdMismatchException(MSGIDMISMATCH);
+        }
+        if (bookRepository.findBookByAuthor(bookToUpdate.getAuthor()).isPresent()){
+            throw new BookAuthorAlreadyUsedException(MSGAUTHORUSED);
         }
         Optional<Book> isBookCreated = bookRepository.findById(id);
         if (isBookCreated.isPresent()) {
