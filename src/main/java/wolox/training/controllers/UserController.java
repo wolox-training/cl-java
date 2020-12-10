@@ -26,7 +26,7 @@ import wolox.training.models.User;
 import wolox.training.repositories.UserRepository;
 
 @RestController
-@RequestMapping("/api/training/users")
+@RequestMapping("/api/users")
 @Api(value = "User microservice", tags = "This Services REST has a CRUD for Users")
 public class UserController {
 
@@ -70,7 +70,7 @@ public class UserController {
             @ApiResponse(code = 200, message = "Successfully retrieve user"),
             @ApiResponse(code = 404, message = "User not found")
     })
-    @GetMapping("{/id}")
+    @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(
             @ApiParam(value = "Id of the user that's need to be searched", required = true, example = "7")
             @PathVariable("id") Long id) {
@@ -161,7 +161,8 @@ public class UserController {
         if(!userToUpdate.getId().equals(id)) {
             throw new UserIdMismatchException(MSGIDMISMATCHED);
         }
-        if(userRepository.findByUsername(userToUpdate.getUsername()).isPresent()) {
+        if((userRepository.findByUsername(userToUpdate.getUsername()).isPresent())&&
+                (userRepository.findByUsername(userToUpdate.getUsername())).get().getId() != id) {
             throw new UsernameAlreadyTakenException(MSGUSERNAMETAKEN);
         }
         Optional<User> isUserCreated = userRepository.findById(id);

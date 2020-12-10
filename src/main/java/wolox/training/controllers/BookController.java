@@ -26,7 +26,7 @@ import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 
 @RestController
-@RequestMapping("/api/training/books")
+@RequestMapping("/api/books")
 @Api(value = "Book microservice", tags = "This Service REST has a CRUD for Books")
 public class BookController {
 
@@ -187,7 +187,8 @@ public class BookController {
         if (!bookToUpdate.getId().equals(id)) {
             throw new BookIdMismatchException(MSGIDMISMATCH);
         }
-        if (bookRepository.findBookByAuthor(bookToUpdate.getAuthor()).isPresent()){
+        if ((bookRepository.findBookByAuthor(bookToUpdate.getAuthor()).isPresent())&&
+                (bookRepository.findBookByAuthor(bookToUpdate.getAuthor())).get().getId() != id){
             throw new BookAuthorAlreadyUsedException(MSGAUTHORUSED);
         }
         Optional<Book> isBookCreated = bookRepository.findById(id);
