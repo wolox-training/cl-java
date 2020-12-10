@@ -1,5 +1,10 @@
 package wolox.training.controllers;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +26,13 @@ import wolox.training.repositories.BookRepository;
 
 @RestController
 @RequestMapping("/api/training/books")
+@Api(value = "Book microservice", tags = "This Service REST has a CRUD for Books")
 public class BookController {
 
     private static final String MSGNOTFOUND = "Book not found";
     private static final String MSGIDMISMATCH = "Book Id mismatched";
     private static final String MSGDELETESUCCESSFULLY = "Book Successfully Deleted";
+
     @Autowired
     private BookRepository bookRepository;
 
@@ -50,6 +57,11 @@ public class BookController {
      * @return ResponseEntity with a list of {@link Book} with all the books,
      *         In case that the list is empty, return a ResponseEntity noContent.
      */
+    @ApiOperation(value = "Get all Books", response = Book.class, responseContainer = "List")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieve all books"),
+            @ApiResponse(code = 204, message = "Successfully searched books, but there are not any book")
+    })
     @GetMapping
     public ResponseEntity<List<Book>> getAllBooks() {
         List<Book> response = bookRepository.findAll();
@@ -66,8 +78,15 @@ public class BookController {
      * @return ResponseEntity with found {@link Book} with the id passed.
      * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that a {@link Book} was not found by the id passed.
      */
+    @ApiOperation(value = "Get a book by ID", response = Book.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieve book"),
+            @ApiResponse(code = 404, message = "Book not found")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable("id") Long id) {
+    public ResponseEntity<Book> getBookById(
+            @ApiParam(value = "ID of book that's need to be searched", required = true, example = "11")
+            @PathVariable("id") Long id) {
         Optional<Book> response = bookRepository.findById(id);
         if(response.isPresent()) {
             return ResponseEntity.ok(response.get());
@@ -83,8 +102,15 @@ public class BookController {
      * @return ResponseEntity with found {@link Book} with the author passed.
      * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that a {@link Book} was not found by the author passed.
      */
+    @ApiOperation(value = "Get a book by Author", response = Book.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieve book"),
+            @ApiResponse(code = 404, message = "Book not found")
+    })
     @GetMapping("/byAuthor")
-    public ResponseEntity<Book> getBookByAuthor(@RequestParam("author") String author) {
+    public ResponseEntity<Book> getBookByAuthor(
+            @ApiParam(value = "Author of the book that's need to be searched", required = true, example = "David")
+            @RequestParam("author") String author) {
         Optional<Book> response = bookRepository.findBookByAuthor(author);
         if (response.isPresent()) {
             return ResponseEntity.ok(response.get());
@@ -108,8 +134,14 @@ public class BookController {
      *     isbn: Isbn of the book (String).
      * @return ResponseEntity with {@link Book} created with the attributes passed in Book model.
      */
+    @ApiOperation(value = "Add a book", response = Book.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully created book")
+    })
     @PostMapping
-    public ResponseEntity<Book> addBook (@RequestBody Book bookToSave) {
+    public ResponseEntity<Book> addBook (
+            @ApiParam(value = "Book object to be created", required = true)
+            @RequestBody Book bookToSave) {
         Book response = bookRepository.save(bookToSave);
         return ResponseEntity.ok(response);
     }
@@ -133,8 +165,17 @@ public class BookController {
      * @exception BookIdMismatchException: throw a {@link BookIdMismatchException} in case that the id passed and id of the {@link Book} made mismatched.
      * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that the {@link Book} was not found by the id passed.
      */
+    @ApiOperation(value = "Update a book", response = Book.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully updated book"),
+            @ApiResponse(code = 400, message = "ID of book and ID passed mismatched"),
+            @ApiResponse(code = 404, message = "Book not found")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<Book> updateBook(@PathVariable("id") Long id,
+    public ResponseEntity<Book> updateBook(
+            @ApiParam(value = "ID of the book that's need to be updated", required = true, example = "11")
+            @PathVariable("id") Long id,
+            @ApiParam(value = "Book object to be updated", required = true)
             @RequestBody Book bookToUpdate) {
         if (!bookToUpdate.getId().equals(id)) {
             throw new BookIdMismatchException(MSGIDMISMATCH);
@@ -155,8 +196,15 @@ public class BookController {
      * @return ResponseEntity with a String message who inform that the book was successfully deleted.
      * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that a {@link Book} was not found by the id passed.
      */
+    @ApiOperation(value = "Delete a book by ID", response = String.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully deleted book"),
+            @ApiResponse(code = 404, message = "Book not found")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBookById (@PathVariable("id") Long id) {
+    public ResponseEntity<String> deleteBookById (
+            @ApiParam(value = "ID of book that's need to be deleted", required = true, example = "1")
+            @PathVariable("id") Long id) {
         Optional<Book> isBookCreated = bookRepository.findById(id);
         if (isBookCreated.isPresent()) {
             bookRepository.deleteById(id);

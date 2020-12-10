@@ -1,5 +1,7 @@
 package wolox.training.models;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,6 +12,7 @@ import javax.persistence.Id;
  * This class is used to have the model of a Book
  */
 @Entity
+@ApiModel(description = "Books from the OpenLibraryAPI")
 public class Book {
 
     /**
@@ -17,34 +20,40 @@ public class Book {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @ApiModelProperty(notes = "The ID of the book", example = "11")
     private Long id;
 
     /**
      * Genre of the book
      */
+    @ApiModelProperty(notes = "The genre of the book", example = "Review")
     private String genre;
 
     /**
      * Author of the book
      */
     @Column(nullable = false, unique = true)
+    @ApiModelProperty(notes = "The author of the book", required = true, example = "David")
     private String author;
 
     /**
      * Image of the book
      */
     @Column(nullable = false)
+    @ApiModelProperty(notes = "The image of the book", required = true, example = "147852369")
     private String image;
 
     /**
      * Title of the book
      */
     @Column(nullable = false)
+    @ApiModelProperty(notes = "The title of the book", required = true, example = "PROMPT")
     private String title;
 
     /**
      * Subtitle of the book
      */
+    @ApiModelProperty(notes = "The subtitle of the book", required = true, example = "Real-Time Commit Protocol")
     @Column(nullable = false)
     private String subtitle;
 
@@ -52,24 +61,28 @@ public class Book {
      * Publisher of the book
      */
     @Column(nullable = false)
+    @ApiModelProperty(notes = "The publisher of the book", required = true, example = "IEEExplorer")
     private String publisher;
 
     /**
      * Year of the book
      */
     @Column(nullable = false)
+    @ApiModelProperty(notes = "The year of the book", required = true, example = "2018")
     private String year;
 
     /**
      * Pages of the book
      */
     @Column(nullable = false)
+    @ApiModelProperty(notes = "The number of pages of the book", required = true, example = "350")
     private Integer pages;
 
     /**
      * International Standard Book Number of the book
      */
     @Column(nullable = false)
+    @ApiModelProperty(notes = "The ISBN of the book", required = true, example = "1234567898")
     private String isbn;
 
 

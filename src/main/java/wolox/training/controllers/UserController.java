@@ -1,5 +1,10 @@
 package wolox.training.controllers;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +26,7 @@ import wolox.training.repositories.UserRepository;
 
 @RestController
 @RequestMapping("/api/training/users")
+@Api(value = "User microservice", tags = "This Services REST has a CRUD for Users")
 public class UserController {
 
     private static final String MSGNOTFOUND = "User not found";
@@ -36,6 +42,11 @@ public class UserController {
      * @return ResponseEntity with a list of {@link User} with all users,
      *         In case that the list is empty, return ResponseEntity noContent.
      */
+    @ApiOperation(value = "Get all users", response = User.class, responseContainer = "List")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieve all users"),
+            @ApiResponse(code = 204, message = "Successfully searched users but there are not any user")
+    })
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> response = userRepository.findAll();
@@ -52,8 +63,15 @@ public class UserController {
      * @return ResponseEntity with found {@link User} with the id passed.
      * @exception UserNotFoundException: throw a {@link UserNotFoundException} in case that an {@link User} was not found by the id passed.
      */
+    @ApiOperation(value = "Get an user by ID", response = User.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieve user"),
+            @ApiResponse(code = 404, message = "User not found")
+    })
     @GetMapping("{/id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
+    public ResponseEntity<User> getUserById(
+            @ApiParam(value = "Id of the user that's need to be searched", required = true, example = "7")
+            @PathVariable("id") Long id) {
         Optional<User> response = userRepository.findById(id);
         if (response.isPresent()) {
             return ResponseEntity.ok(response.get());
@@ -69,8 +87,15 @@ public class UserController {
      * @return ResponseEntity with found {@link User} with the username passed.
      * @exception UserNotFoundException: throw a {@link UserNotFoundException} in case that an {@link User} was not found by the username passed
      */
+    @ApiOperation(value = "Get an user by the username", response = User.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieve user"),
+            @ApiResponse(code = 404, message = "User not found")
+    })
     @GetMapping("/byUsername")
-    public ResponseEntity<User> getUserByUsername(@RequestParam("username") String username) {
+    public ResponseEntity<User> getUserByUsername(
+            @ApiParam(value = "Username of the user that's need to be searched", required = true, example = "thiam")
+            @RequestParam("username") String username) {
         Optional<User> response = userRepository.findByUsername(username);
         if (response.isPresent()) {
             return ResponseEntity.ok(response.get());
@@ -89,8 +114,14 @@ public class UserController {
      *                  List{@link Book}: Books of the library of the user (Can be empty) or not pass.
      * @return ResponseEntity with the {@link User} created with the attributes passed.
      */
+    @ApiOperation(value = "Add an user", response = User.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully created user")
+    })
     @PostMapping
-    public ResponseEntity<User> addUser(@RequestBody User userToSave) {
+    public ResponseEntity<User> addUser(
+            @ApiParam(value = "User object to be created", required = true)
+            @RequestBody User userToSave) {
         User response = userRepository.save(userToSave);
         return ResponseEntity.ok(response);
     }
@@ -108,8 +139,17 @@ public class UserController {
      * @exception UserIdMismatchException: throw an {@link UserIdMismatchException} in case that the id passed not matched with the {@link User} passed.
      * @exception UserNotFoundException: throw an {@link UserNotFoundException} in case that the {@link User} was not found by the id passed.
      */
+    @ApiOperation(value = "Updated an user", response = User.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully updated user"),
+            @ApiResponse(code = 400, message = "ID of user an ID passed mismatched"),
+            @ApiResponse(code = 404, message = "User not found")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable("id") Long id,
+    public ResponseEntity<User> updateUser(
+            @ApiParam(value = "ID of the user that's need to be updated", required = true, example = "7")
+            @PathVariable("id") Long id,
+            @ApiParam(value = "User object to be updated", required = true)
             @RequestBody User userToUpdate) {
         if(!userToUpdate.getId().equals(id)) {
             throw new UserIdMismatchException(MSGIDMISMATCHED);
@@ -130,8 +170,15 @@ public class UserController {
      * @return ResponseEntity with a String message who inform that the user was successfully deleted.
      * @exception UserNotFoundException: throw an {@link UserNotFoundException} in case that the {@link User} was not found by the id passed.
      */
+    @ApiOperation(value = "Delete user by ID", response = String.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully deleted user"),
+            @ApiResponse(code = 404, message = "User not found")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUserById(@PathVariable("id") Long id) {
+    public ResponseEntity<String> deleteUserById(
+            @ApiParam(value = "ID of the user that's need to be deleted", required = true, example = "6")
+            @PathVariable("id") Long id) {
         Optional<User> isUserCreated = userRepository.findById(id);
         if (isUserCreated.isPresent()) {
             userRepository.deleteById(id);
@@ -162,8 +209,17 @@ public class UserController {
      *                                                                         In case that the book is already in the {@link User} collection library.
      *
      */
+    @ApiOperation(value = "Add a book to the user library", response = User.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully added book to user library"),
+            @ApiResponse(code = 400, message = "Book is already owned by the user"),
+            @ApiResponse(code = 404, message = "User not found")
+    })
     @PostMapping("/{id}/addBook")
-    public ResponseEntity<User> addBookToLibraryUser(@PathVariable("id") Long idUser,
+    public ResponseEntity<User> addBookToLibraryUser(
+            @ApiParam(value = "ID of the user where is going to be add the book to the library", required = true, example = "7")
+            @PathVariable("id") Long idUser,
+            @ApiParam(value = "Book object who is going to be added to the user library", required = true)
             @RequestBody Book bookToAdd) {
         Optional<User> isUserCreated = userRepository.findById(idUser);
         if (isUserCreated.isPresent()) {
@@ -193,8 +249,16 @@ public class UserController {
      * @return ResponseEntity with the {@link User} updated with the collection library without the {@link Book} removed.
      * @exception UserNotFoundException: throw an {@link UserNotFoundException} in case that the {@link User} was not found by the id passed.
      */
+    @ApiOperation(value = "Remove a book from the user library", response = User.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully removed book from user library"),
+            @ApiResponse(code = 404, message = "User not found")
+    })
     @DeleteMapping("/{id}/removeBook")
-    public ResponseEntity<User> removeBookFromLibraryUser(@PathVariable("id") Long idUser,
+    public ResponseEntity<User> removeBookFromLibraryUser(
+            @ApiParam(value = "ID of the user where is going to remove the book from library", required = true, example = "7")
+            @PathVariable("id") Long idUser,
+            @ApiParam(value = "Book object who is going to be deleted from library", required = true)
             @RequestBody Book bookToRemove) {
         Optional<User> isUserCreated = userRepository.findById(idUser);
         if (isUserCreated.isPresent()) {
