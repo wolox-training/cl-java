@@ -1,5 +1,7 @@
 package wolox.training.models;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +28,7 @@ import wolox.training.exceptions.responses.BookAlreadyOwnException;
         uniqueConstraints = {
             @UniqueConstraint(columnNames = "username")
         })
+@ApiModel(description = "Users of the OpenLibraryAPI")
 public class User {
 
     /**
@@ -33,24 +36,28 @@ public class User {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @ApiModelProperty(notes = "ID of the user", example = "7")
     private Long id;
 
     /**
      * Username of the user
      */
     @Column(nullable = false)
+    @ApiModelProperty(notes = "Username of the user", required = true, example = "thiam")
     private String username;
 
     /**
      * Name of the user
      */
     @Column(nullable = false)
+    @ApiModelProperty(notes = "Name of the user", required = true, example = "Santiago")
     private String name;
 
     /**
      * Birthday of the user
      */
     @Column(nullable = false)
+    @ApiModelProperty(notes = "Birthday of the user", required = true, example = "1995-09-25")
     private LocalDate birthdate;
 
     /**
@@ -62,6 +69,7 @@ public class User {
             joinColumns = @JoinColumn(name = "userId"),
             inverseJoinColumns = @JoinColumn(name = "bookId")
     )
+    @ApiModelProperty(notes = "Collection library of the user")
     private List<Book> library = new ArrayList<>();
 
     public User() {
