@@ -6,10 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -20,6 +18,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 import wolox.training.exceptions.responses.BookAlreadyOwnException;
 
 /**
@@ -37,28 +36,28 @@ public class User {
      * Id of the user
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @ApiModelProperty(notes = "ID of the user", example = "7")
     private Long id;
 
     /**
      * Username of the user
      */
-    @Column(nullable = false)
+    @NotNull
     @ApiModelProperty(notes = "Username of the user", required = true, example = "thiam")
     private String username;
 
     /**
      * Name of the user
      */
-    @Column(nullable = false)
+    @NotNull
     @ApiModelProperty(notes = "Name of the user", required = true, example = "Santiago")
     private String name;
 
     /**
      * Birthday of the user
      */
-    @Column(nullable = false)
+    @NotNull
     @ApiModelProperty(notes = "Birthday of the user", required = true, example = "1995-09-25")
     private LocalDate birthdate;
 
@@ -90,17 +89,14 @@ public class User {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
-
-        this.username = Preconditions.checkNotNull(username, "Username must not be null");
+        Preconditions.checkNotNull(username, "Username must not be null");
+        Preconditions.checkArgument(!username.isEmpty(), "Username must not be empty");
+        this.username = username;
     }
 
     public String getName() {
@@ -108,8 +104,10 @@ public class User {
     }
 
     public void setName(String name) {
-
-        this.name = Preconditions.checkNotNull(name, "Name must not be null");
+        Preconditions.checkNotNull(name, "Name must not be null");
+        Preconditions.checkArgument(!name.isEmpty(), "Name must not be empty");
+        Preconditions.checkArgument(name.matches("[a-zA-Z]*"),"Name must not have numbers or invalid characters");
+        this.name = name;
     }
 
     public LocalDate getBirthdate() {
@@ -118,9 +116,8 @@ public class User {
 
     public void setBirthdate(LocalDate birthdate) {
         Preconditions.checkNotNull(birthdate, "Birthday must not be null");
-        Date actual = new Date();
-        System.out.println(actual.getYear() + 1900);
-        Preconditions.checkArgument(birthdate.getYear() <= (actual.getYear() + 1900),"Birthday must be less or equal than actual year");
+        LocalDate actual = LocalDate.now();
+        Preconditions.checkArgument(birthdate.isBefore(actual),"Birthday must be less than actual Date");
         this.birthdate = birthdate;
     }
 
@@ -174,23 +171,9 @@ public class User {
      *     isbn: Isbn of the book (String).
      */
     public void removeBookToUser(Book book) {
-        if(validateBook(book)) {
-            this.library.remove(getBookFromCollection(book));
-        }
+        this.library.remove(getBookFromCollection(book));
     }
 
-    /**
-     * This method is used to remove a {@link Book}  by id from the library collection of an {@link User}.
-     *
-     * @param id: Id of the book who is going to be removed from the library collection of the {@link User},
-     */
-    public void removeBookToUserById(Long id) {
-        for (Book b : this.library) {
-            if (b.getId().equals(id)) {
-                this.library.remove(b);
-            }
-        }
-    }
 
     /**
      * This method is used to validate if a {@link Book} is in the library collection of an {@link User}.
