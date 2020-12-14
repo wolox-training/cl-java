@@ -5,8 +5,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,33 +30,13 @@ import wolox.training.repositories.UserRepository;
 @Api(value = "User microservice", tags = "This Services REST has a CRUD for Users")
 public class UserController {
 
-    private static final String MSGNOTFOUND = "User not found";
-    private static final String MSGIDMISMATCHED = "User Id mismatched";
-    private static final String MSGSUCCESSFULLYDELETED = "User Successfully Deleted";
-    private static final String MSGUSERNAMETAKEN = "The username is already taken";
+    private static final String USER_NOT_FOUND_MSG = "User not found";
+    private static final String ID_MISMATCHED_MSG = "User Id mismatched";
+    private static final String SUCCESSFULLY_DELETED_MSG = "User Successfully Deleted";
+    private static final String USERNAME_TAKEN_MSG = "The username is already taken";
 
     @Autowired
     private UserRepository userRepository;
-
-    /**
-     * This method is used to get a list with all {@link User}s.
-     *
-     * @return ResponseEntity with a list of {@link User} with all users,
-     *         In case that the list is empty, return ResponseEntity noContent.
-     */
-    @ApiOperation(value = "Get all users", response = User.class, responseContainer = "List")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully retrieve all users"),
-            @ApiResponse(code = 204, message = "Successfully searched users but there are not any user")
-    })
-    @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> response = userRepository.findAll();
-        if (response.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(response);
-    }
 
     /**
      * This method is used to get a {@link User} by id.
@@ -74,36 +54,31 @@ public class UserController {
     public ResponseEntity<User> getUserById(
             @ApiParam(value = "Id of the user that's need to be searched", required = true, example = "7")
             @PathVariable("id") Long id) {
-        Optional<User> response = userRepository.findById(id);
-        if (response.isPresent()) {
-            return ResponseEntity.ok(response.get());
-        } else {
-            throw new UserNotFoundException(MSGNOTFOUND);
-        }
+        User response = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MSG));
+        return ResponseEntity.ok(response);
     }
 
     /**
-     * This method is used to get an {@link User} by username.
+     * This method is used to get an {@link User} by username or a List with all {@link User}.
      *
      * @param username: Username of the user to be searched (String).
      * @return ResponseEntity with found {@link User} with the username passed.
      * @exception UserNotFoundException: throw a {@link UserNotFoundException} in case that an {@link User} was not found by the username passed
      */
-    @ApiOperation(value = "Get an user by the username", response = User.class)
+    @ApiOperation(value = "Get an user by the username", response = User.class, responseContainer = "List")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieve user"),
             @ApiResponse(code = 404, message = "User not found")
     })
-    @GetMapping("/byUsername")
-    public ResponseEntity<User> getUserByUsername(
-            @ApiParam(value = "Username of the user that's need to be searched", required = true, example = "thiam")
-            @RequestParam("username") String username) {
-        Optional<User> response = userRepository.findByUsername(username);
-        if (response.isPresent()) {
-            return ResponseEntity.ok(response.get());
-        } else {
-            throw new UserNotFoundException(MSGNOTFOUND);
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsersOrUserByUsername(
+            @ApiParam(value = "Username of the user that's need to be searched",  example = "rider")
+            @RequestParam(value = "username", required = false, defaultValue = "") String username) {
+        if(username.isEmpty()){
+            return ResponseEntity.ok(userRepository.findAll());
         }
+        User response = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MSG));
+        return ResponseEntity.ok(Arrays.asList(response));
     }
 
     /**
@@ -126,7 +101,7 @@ public class UserController {
             @ApiParam(value = "User object to be created", required = true)
             @RequestBody User userToSave) {
         if(userRepository.findByUsername(userToSave.getUsername()).isPresent()) {
-            throw new UsernameAlreadyTakenException(MSGUSERNAMETAKEN);
+            throw new UsernameAlreadyTakenException(USERNAME_TAKEN_MSG);
         }
         User response = userRepository.save(userToSave);
         return ResponseEntity.ok(response);
@@ -159,19 +134,15 @@ public class UserController {
             @ApiParam(value = "User object to be updated", required = true)
             @RequestBody User userToUpdate) {
         if(!userToUpdate.getId().equals(id)) {
-            throw new UserIdMismatchException(MSGIDMISMATCHED);
+            throw new UserIdMismatchException(ID_MISMATCHED_MSG);
         }
         if((userRepository.findByUsername(userToUpdate.getUsername()).isPresent())&&
-                (userRepository.findByUsername(userToUpdate.getUsername())).get().getId() != id) {
-            throw new UsernameAlreadyTakenException(MSGUSERNAMETAKEN);
+                (!(userRepository.findByUsername(userToUpdate.getUsername()).get().getId().equals(id)))) {
+            throw new UsernameAlreadyTakenException(USERNAME_TAKEN_MSG);
         }
-        Optional<User> isUserCreated = userRepository.findById(id);
-        if (isUserCreated.isPresent()) {
-            User response = userRepository.save(userToUpdate);
-            return ResponseEntity.ok(response);
-        } else {
-            throw new UserNotFoundException(MSGNOTFOUND);
-        }
+        userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MSG));
+        User response = userRepository.save(userToUpdate);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -190,13 +161,9 @@ public class UserController {
     public ResponseEntity<String> deleteUserById(
             @ApiParam(value = "ID of the user that's need to be deleted", required = true, example = "6")
             @PathVariable("id") Long id) {
-        Optional<User> isUserCreated = userRepository.findById(id);
-        if (isUserCreated.isPresent()) {
-            userRepository.deleteById(id);
-            return ResponseEntity.ok(MSGSUCCESSFULLYDELETED);
-        } else {
-            throw new UserNotFoundException(MSGNOTFOUND);
-        }
+        User isUserCreated = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MSG));
+        userRepository.deleteById(isUserCreated.getId());
+        return ResponseEntity.ok(SUCCESSFULLY_DELETED_MSG);
     }
 
     /**
@@ -208,12 +175,12 @@ public class UserController {
      *           genre: Genre of the book (String),
      *           author: Author of the book (String),
      *           image: Image of the book (String),
-     *          title: Title of the book (String),
-     *          subtitle: Subtitle of the book (String),
-     *            publisher: Publisher of the book (String),
-     *          year: Year of the book (String),
+     *           title: Title of the book (String),
+     *           subtitle: Subtitle of the book (String),
+     *           publisher: Publisher of the book (String),
+     *           year: Year of the book (String),
      *           pages: Pages of the book (Integer),
-     *          isbn: Isbn of the book (String).
+     *           isbn: Isbn of the book (String).
      * @return ResponseEntity with the {@link User} updated with the new {@link Book} in the library (Long).
      * @exception UserNotFoundException: throw an {@link UserNotFoundException} in case that the {@link User} was not found.
      * @exception wolox.training.exceptions.responses.BookAlreadyOwnException: throw a {@link wolox.training.exceptions.responses.BookAlreadyOwnException}
@@ -231,14 +198,10 @@ public class UserController {
             @PathVariable("id") Long idUser,
             @ApiParam(value = "Book object who is going to be added to the user library", required = true)
             @RequestBody Book bookToAdd) {
-        Optional<User> isUserCreated = userRepository.findById(idUser);
-        if (isUserCreated.isPresent()) {
-            isUserCreated.get().addBookToUser(bookToAdd);
-            User response = userRepository.save(isUserCreated.get());
-            return ResponseEntity.ok(response);
-        } else {
-            throw new UserNotFoundException(MSGNOTFOUND);
-        }
+        User isUserCreated = userRepository.findById(idUser).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MSG));
+        isUserCreated.addBookToUser(bookToAdd);
+        User response = userRepository.save(isUserCreated);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -270,13 +233,9 @@ public class UserController {
             @PathVariable("id") Long idUser,
             @ApiParam(value = "Book object who is going to be deleted from library", required = true)
             @RequestBody Book bookToRemove) {
-        Optional<User> isUserCreated = userRepository.findById(idUser);
-        if (isUserCreated.isPresent()) {
-            isUserCreated.get().removeBookToUser(bookToRemove);
-            User response = userRepository.save(isUserCreated.get());
-            return ResponseEntity.ok(response);
-        } else {
-            throw new UserNotFoundException(MSGNOTFOUND);
-        }
+        User isUserCreated = userRepository.findById(idUser).orElseThrow(() -> new UserNotFoundException((USER_NOT_FOUND_MSG)));
+        isUserCreated.removeBookToUser(bookToRemove);
+        User response = userRepository.save(isUserCreated);
+        return ResponseEntity.ok(response);
     }
 }

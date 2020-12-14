@@ -3,11 +3,12 @@ package wolox.training.models;
 import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import javax.persistence.Column;
+import java.time.LocalDate;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 /**
  * This class is used to have the model of a Book
@@ -20,7 +21,7 @@ public class Book {
      * Id of the book
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @ApiModelProperty(notes = "The ID of the book", example = "11")
     private Long id;
 
@@ -33,21 +34,21 @@ public class Book {
     /**
      * Author of the book
      */
-    @Column(nullable = false, unique = true)
+    @NotNull
     @ApiModelProperty(notes = "The author of the book", required = true, example = "David")
     private String author;
 
     /**
      * Image of the book
      */
-    @Column(nullable = false)
+    @NotNull
     @ApiModelProperty(notes = "The image of the book", required = true, example = "147852369")
     private String image;
 
     /**
      * Title of the book
      */
-    @Column(nullable = false)
+    @NotNull
     @ApiModelProperty(notes = "The title of the book", required = true, example = "PROMPT")
     private String title;
 
@@ -55,34 +56,34 @@ public class Book {
      * Subtitle of the book
      */
     @ApiModelProperty(notes = "The subtitle of the book", required = true, example = "Real-Time Commit Protocol")
-    @Column(nullable = false)
+    @NotNull
     private String subtitle;
 
     /**
      * Publisher of the book
      */
-    @Column(nullable = false)
+    @NotNull
     @ApiModelProperty(notes = "The publisher of the book", required = true, example = "IEEExplorer")
     private String publisher;
 
     /**
      * Year of the book
      */
-    @Column(nullable = false)
+    @NotNull
     @ApiModelProperty(notes = "The year of the book", required = true, example = "2018")
     private String year;
 
     /**
      * Pages of the book
      */
-    @Column(nullable = false)
+    @NotNull
     @ApiModelProperty(notes = "The number of pages of the book", required = true, example = "350")
     private Integer pages;
 
     /**
      * International Standard Book Number of the book
      */
-    @Column(nullable = false)
+    @NotNull
     @ApiModelProperty(notes = "The ISBN of the book", required = true, example = "1234567898")
     private String isbn;
 
@@ -126,7 +127,10 @@ public class Book {
     }
 
     public void setAuthor(String author) {
-        this.author = Preconditions.checkNotNull(author,"Author must not be null");
+        Preconditions.checkArgument(!author.isEmpty(), "Author must not be empty");
+        Preconditions.checkNotNull(author,"Author must not be null");
+        Preconditions.checkArgument(author.matches("[a-zA-Z]*"), "Author must not have numbers or invalid characters");
+        this.author = author;
     }
 
     public String getImage() {
@@ -143,8 +147,9 @@ public class Book {
     }
 
     public void setTitle(String title) {
-
-        this.title = Preconditions.checkNotNull(title, "Title must not be null");
+        Preconditions.checkNotNull(title, "Title must not be null");
+        Preconditions.checkArgument(!title.isEmpty(), "Title must not be empty");
+        this.title = title;
     }
 
     public String getSubtitle() {
@@ -152,8 +157,9 @@ public class Book {
     }
 
     public void setSubtitle(String subtitle) {
-
-        this.subtitle = Preconditions.checkNotNull(subtitle, "Subtitle must not be null");
+        Preconditions.checkNotNull(subtitle, "Subtitle must not be null");
+        Preconditions.checkArgument(!subtitle.isEmpty(), "Subtitle must not be empty");
+        this.subtitle = subtitle;
     }
 
     public String getPublisher() {
@@ -161,8 +167,9 @@ public class Book {
     }
 
     public void setPublisher(String publisher) {
-
-        this.publisher = Preconditions.checkNotNull(publisher, "Publisher must not be null");
+        Preconditions.checkNotNull(publisher, "Publisher must not be null");
+        Preconditions.checkArgument(!publisher.isEmpty(), "Publisher must not be empty");
+        this.publisher = publisher;
     }
 
     public String getYear() {
@@ -171,7 +178,10 @@ public class Book {
 
     public void setYear(String year) {
 
-        this.year = Preconditions.checkNotNull(year,"Year must not be null");
+        Preconditions.checkNotNull(year,"Year must not be null");
+        Preconditions.checkArgument(!year.isEmpty(), "Year must not be empty");
+        Preconditions.checkArgument(Integer.parseInt(year)<= LocalDate.now().getYear(), "Year must be less or equal than actual");
+        this.year = year;
     }
 
     public Integer getPages() {
@@ -179,8 +189,9 @@ public class Book {
     }
 
     public void setPages(Integer pages) {
-
-        this.pages = Preconditions.checkNotNull(pages, "Pages must not be null");
+        Preconditions.checkNotNull(pages, "Pages must not be null");
+        Preconditions.checkArgument(pages>0,"Number of pages must be greater than 0");
+        this.pages = pages;
     }
 
     public String getIsbn() {
@@ -188,8 +199,9 @@ public class Book {
     }
 
     public void setIsbn(String isbn) {
-
-        this.isbn = Preconditions.checkNotNull(isbn, "ISBN must not be null");
+        Preconditions.checkNotNull(isbn, "ISBN must not be null");
+        Preconditions.checkArgument(!isbn.isEmpty(), "ISBN must not be empty");
+        this.isbn = isbn;
     }
 
 }

@@ -5,8 +5,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import wolox.training.exceptions.responses.BookAuthorAlreadyUsedException;
 import wolox.training.exceptions.responses.BookIdMismatchException;
 import wolox.training.exceptions.responses.BookNotFoundException;
 import wolox.training.models.Book;
@@ -30,10 +29,9 @@ import wolox.training.repositories.BookRepository;
 @Api(value = "Book microservice", tags = "This Service REST has a CRUD for Books")
 public class BookController {
 
-    private static final String MSGNOTFOUND = "Book not found";
-    private static final String MSGIDMISMATCH = "Book Id mismatched";
-    private static final String MSGDELETESUCCESSFULLY = "Book Successfully Deleted";
-    private static final String MSGAUTHORUSED = "The author is already used";
+    private static final String BOOK_NOT_FOUND_MSG = "Book not found";
+    private static final String ID_MISMATCH_MSG = "Book Id mismatched";
+    private static final String SUCCESSFULLY_DELETED_MSG = "Book Successfully Deleted";
 
     @Autowired
     private BookRepository bookRepository;
@@ -53,25 +51,6 @@ public class BookController {
         return "greeting";
     }
 
-    /**
-     * This method is used to get a list with all books.
-     *
-     * @return ResponseEntity with a list of {@link Book} with all the books,
-     *         In case that the list is empty, return a ResponseEntity noContent.
-     */
-    @ApiOperation(value = "Get all Books", response = Book.class, responseContainer = "List")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully retrieve all books"),
-            @ApiResponse(code = 204, message = "Successfully searched books, but there are not any book")
-    })
-    @GetMapping
-    public ResponseEntity<List<Book>> getAllBooks() {
-        List<Book> response = bookRepository.findAll();
-        if (response.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(response);
-    }
 
     /**
      * This method is used to get a {@link Book} by the id.
@@ -89,19 +68,15 @@ public class BookController {
     public ResponseEntity<Book> getBookById(
             @ApiParam(value = "ID of book that's need to be searched", required = true, example = "11")
             @PathVariable("id") Long id) {
-        Optional<Book> response = bookRepository.findById(id);
-        if(response.isPresent()) {
-            return ResponseEntity.ok(response.get());
-        } else {
-            throw new BookNotFoundException(MSGNOTFOUND);
-        }
+        Book response = bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(BOOK_NOT_FOUND_MSG));
+        return ResponseEntity.ok(response);
     }
 
     /**
-     * This method is used to get a {@link Book} by the author.
+     * This method is used to get a {@link Book} by the author or a list with all{@link Book}.
      *
      * @param author: Author of the book to be searched (String).
-     * @return ResponseEntity with found {@link Book} with the author passed.
+     * @return ResponseEntity with a list of {@link Book} with the author passed or a list of {@link Book} with all books.
      * @exception BookNotFoundException: throw a {@link BookNotFoundException} in case that a {@link Book} was not found by the author passed.
      */
     @ApiOperation(value = "Get a book by Author", response = Book.class)
@@ -109,16 +84,15 @@ public class BookController {
             @ApiResponse(code = 200, message = "Successfully retrieve book"),
             @ApiResponse(code = 404, message = "Book not found")
     })
-    @GetMapping("/byAuthor")
-    public ResponseEntity<Book> getBookByAuthor(
-            @ApiParam(value = "Author of the book that's need to be searched", required = true, example = "David")
-            @RequestParam("author") String author) {
-        Optional<Book> response = bookRepository.findBookByAuthor(author);
-        if (response.isPresent()) {
-            return ResponseEntity.ok(response.get());
-        } else {
-            throw new BookNotFoundException(MSGNOTFOUND);
+    @GetMapping
+    public ResponseEntity<List<Book>> getAllBooksOrBookByAuthor(
+            @ApiParam(value = "Author of the book that's need to be searched", example = "David")
+            @RequestParam(value = "author", required = false ,defaultValue = "") String author) {
+        if (author.isEmpty()){
+            return ResponseEntity.ok(bookRepository.findAll());
         }
+        Book response = bookRepository.findFirstByAuthor(author).orElseThrow(() -> new BookNotFoundException(BOOK_NOT_FOUND_MSG));
+        return ResponseEntity.ok(Arrays.asList(response));
     }
 
     /**
@@ -138,16 +112,12 @@ public class BookController {
      */
     @ApiOperation(value = "Add a book", response = Book.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created book"),
-            @ApiResponse(code = 409, message = "Book author already used")
+            @ApiResponse(code = 200, message = "Successfully created book")
     })
     @PostMapping
     public ResponseEntity<Book> addBook (
             @ApiParam(value = "Book object to be created", required = true)
             @RequestBody Book bookToSave) {
-        if(bookRepository.findBookByAuthor(bookToSave.getAuthor()).isPresent()){
-            throw new BookAuthorAlreadyUsedException(MSGAUTHORUSED);
-        }
         Book response = bookRepository.save(bookToSave);
         return ResponseEntity.ok(response);
     }
@@ -175,8 +145,7 @@ public class BookController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully updated book"),
             @ApiResponse(code = 400, message = "ID of book and ID passed mismatched"),
-            @ApiResponse(code = 404, message = "Book not found"),
-            @ApiResponse(code = 409, message = "Book author already used")
+            @ApiResponse(code = 404, message = "Book not found")
     })
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(
@@ -185,19 +154,11 @@ public class BookController {
             @ApiParam(value = "Book object to be updated", required = true)
             @RequestBody Book bookToUpdate) {
         if (!bookToUpdate.getId().equals(id)) {
-            throw new BookIdMismatchException(MSGIDMISMATCH);
+            throw new BookIdMismatchException(ID_MISMATCH_MSG);
         }
-        if ((bookRepository.findBookByAuthor(bookToUpdate.getAuthor()).isPresent())&&
-                (bookRepository.findBookByAuthor(bookToUpdate.getAuthor())).get().getId() != id){
-            throw new BookAuthorAlreadyUsedException(MSGAUTHORUSED);
-        }
-        Optional<Book> isBookCreated = bookRepository.findById(id);
-        if (isBookCreated.isPresent()) {
-            Book response = bookRepository.save(bookToUpdate);
-            return ResponseEntity.ok(response);
-        } else {
-            throw new BookNotFoundException(MSGNOTFOUND);
-        }
+        bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(BOOK_NOT_FOUND_MSG));
+        Book response = bookRepository.save(bookToUpdate);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -216,13 +177,8 @@ public class BookController {
     public ResponseEntity<String> deleteBookById (
             @ApiParam(value = "ID of book that's need to be deleted", required = true, example = "1")
             @PathVariable("id") Long id) {
-        Optional<Book> isBookCreated = bookRepository.findById(id);
-        if (isBookCreated.isPresent()) {
-            bookRepository.deleteById(id);
-            String response = MSGDELETESUCCESSFULLY;
-            return ResponseEntity.ok(response);
-        } else {
-            throw new BookNotFoundException(MSGNOTFOUND);
-        }
+        Book bookToDelete = bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(BOOK_NOT_FOUND_MSG));
+        bookRepository.deleteById(bookToDelete.getId());
+        return ResponseEntity.ok(SUCCESSFULLY_DELETED_MSG);
     }
 }
