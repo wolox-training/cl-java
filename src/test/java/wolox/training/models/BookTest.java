@@ -110,17 +110,17 @@ class BookTest {
     }
 
     @Test()
-    public void whenSaveBookWithPagesZero_thenThrowException() throws org.hibernate.exception.ConstraintViolationException {
+    public void whenSaveBookWithPagesZero_thenThrowException() throws IllegalArgumentException{
         //Given
-        Book bookTest = new Book(null,"Mystery","David", "image.png", "title", "-", "Salamander","2000", 0,"123456789");
+        Book bookTest = new Book(null,"Mystery","David", "image.png", "title", "-", "Salamander","2000", null,"123456789");
 
         //when
-        PersistenceException exception = assertThrows(PersistenceException.class, () -> {
-            bookRepository.save(bookTest);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            bookTest.setPages(0);
             testEntityManager.flush();
         });
         //then
-        assertTrue(exception.getCause() instanceof org.hibernate.exception.ConstraintViolationException);
+        assertTrue(exception instanceof IllegalArgumentException);
         System.out.println("whenSaveBookWithPagesZero passed");
     }
 }

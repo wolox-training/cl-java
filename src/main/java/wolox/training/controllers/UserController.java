@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +38,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * This method is used to get a {@link User} by id.
@@ -103,6 +107,7 @@ public class UserController {
         if(userRepository.findByUsername(userToSave.getUsername()).isPresent()) {
             throw new UsernameAlreadyTakenException(USERNAME_TAKEN_MSG);
         }
+        userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
         User response = userRepository.save(userToSave);
         return ResponseEntity.ok(response);
     }
@@ -141,6 +146,7 @@ public class UserController {
             throw new UsernameAlreadyTakenException(USERNAME_TAKEN_MSG);
         }
         userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MSG));
+        userToUpdate.setPassword(passwordEncoder.encode(userToUpdate.getPassword()));
         User response = userRepository.save(userToUpdate);
         return ResponseEntity.ok(response);
     }
