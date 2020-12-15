@@ -16,10 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
+import wolox.training.repositories.UserRepository;
 
 @WebMvcTest(BookController.class)
 class BookControllerTest {
@@ -31,8 +33,12 @@ class BookControllerTest {
     private ObjectMapper mapper;
 
     @MockBean
+    private UserRepository userRepository;
+
+    @MockBean
     private BookRepository bookRepository;
 
+    @WithMockUser(value = "iskandar")
     @Test
     void whenGetAllBooks_thenReturnJsonArray() throws Exception {
         //Given
@@ -52,6 +58,23 @@ class BookControllerTest {
     }
 
     @Test
+    void whenGetAllBooksWithoutAuthentication_thenReturnUnauthorized() throws Exception {
+        //Given
+        Book bookTest = new Book(null,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
+        List<Book> allBooksTest = Arrays.asList(bookTest);
+
+        given(bookRepository.findAll()).willReturn(allBooksTest);
+
+        // When + Then
+        mvc.perform(MockMvcRequestBuilders.get("/api/books")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+
+        System.out.println("whenGetAllBooksWithoutAuthentication Passed");
+    }
+
+    @WithMockUser(value = "iskandar")
+    @Test
     void whenGetABookByAuthor_thenReturnJsonArray() throws Exception {
         //Given
         Book bookTest = new Book(null,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
@@ -67,6 +90,7 @@ class BookControllerTest {
         System.out.println("whenGetABookByAuthor Passed");
     }
 
+    @WithMockUser(value = "iskandar")
     @Test
     void whenGetABookByAuthorNonExist_thenThrowBookNotFound() throws Exception {
         //Given
@@ -82,6 +106,7 @@ class BookControllerTest {
     }
 
 
+    @WithMockUser(value = "iskandar")
     @Test
     void whenGetABookById_thenReturnJson() throws Exception {
         //Given
@@ -120,7 +145,7 @@ class BookControllerTest {
         System.out.println("whenAddABook Passed");
     }
 
-
+    @WithMockUser(value = "iskandar")
     @Test
     void whenUpdateABook_thenReturnOk() throws Exception {
         //Given
@@ -144,6 +169,7 @@ class BookControllerTest {
         System.out.println("whenUpdateABook Passed");
     }
 
+    @WithMockUser(value = "iskandar")
     @Test
     void whenUpdateABookIdMismatch_thenThrowIdMismatched() throws Exception {
         //Given
@@ -167,6 +193,7 @@ class BookControllerTest {
         System.out.println("whenUpdateABookIdMismatch Passed");
     }
 
+    @WithMockUser(value = "iskandar")
     @Test
     void whenDeleteABookById_thenReturnString() throws Exception {
         //Given
@@ -180,6 +207,21 @@ class BookControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         System.out.println("whenDeleteABookById Passed");
+    }
+
+    @Test
+    void whenDeleteABookByIdWithoutAuthentication_thenThrowUnauthorized() throws Exception {
+        //Given
+        Book bookTest = new Book(1L,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
+
+        given(bookRepository.findById(bookTest.getId())).willReturn(java.util.Optional.of(bookTest));
+
+        // When + Then
+        mvc.perform(MockMvcRequestBuilders.delete("/api/books/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+        System.out.println("whenDeleteABookByIdWithoutAuthentication Passed");
     }
 
 }

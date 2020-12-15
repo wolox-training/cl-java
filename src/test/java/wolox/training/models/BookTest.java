@@ -120,7 +120,7 @@ class BookTest {
             testEntityManager.flush();
         });
         //then
-        assertTrue(exception.getCause() instanceof org.hibernate.exception.ConstraintViolationException);
+        assertTrue(exception instanceof org.hibernate.exception.ConstraintViolationException);
         System.out.println("whenSaveBookWithPagesZero passed");
     }
 }

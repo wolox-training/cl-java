@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import javax.persistence.PersistenceException;
-import org.hibernate.PropertyValueException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,8 +13,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import wolox.training.repositories.UserRepository;
 
 @DataJpaTest
@@ -35,7 +32,7 @@ class UserTest {
     @Test
     void whenSaveUser_thenReturnUser() {
         // Given
-        User userTest = new User(null,"Username","David",LocalDate.parse("2004-09-25"), new ArrayList<>());
+        User userTest = new User(null,"Username","David","s3cr3t",LocalDate.parse("2004-09-25"), new ArrayList<>());
         testEntityManager.persist(userTest);
         testEntityManager.flush();
 
@@ -51,7 +48,7 @@ class UserTest {
     @Test
     void whenFindUserByUsername_thenReturnUser() {
         //Given
-        User userTest = new User(null,"Username","David",LocalDate.parse("2004-09-25"), new ArrayList<>());
+        User userTest = new User(null,"Username","David","s3cr3t",LocalDate.parse("2004-09-25"), new ArrayList<>());
         testEntityManager.persist(userTest);
         testEntityManager.flush();;
 
@@ -66,7 +63,7 @@ class UserTest {
     @Test
     void whenSaveUserWithNameNull_thenThrowException() throws javax.validation.ConstraintViolationException {
         //Given
-        User userTest = new User(null, "iskandar",null,LocalDate.parse("1995-01-22"), new ArrayList<>());
+        User userTest = new User(null, "iskandar",null,"s3cr3t",LocalDate.parse("1995-01-22"), new ArrayList<>());
 
         //When
         javax.validation.ConstraintViolationException exception = assertThrows(javax.validation.ConstraintViolationException.class, () -> {
@@ -82,7 +79,7 @@ class UserTest {
     @Test
     void whenSaveUserWithUsernameTaken_thenThrowException() throws ConstraintViolationException {
         //Given
-        User userTest = new User(null, "iskandar","Carlos",LocalDate.parse("1995-01-22"), new ArrayList<>());
+        User userTest = new User(null, "iskandar","Carlos","s3cr3t",LocalDate.parse("1995-01-22"), new ArrayList<>());
 
         //When
         PersistenceException exception = assertThrows(PersistenceException.class, () -> {
@@ -99,7 +96,7 @@ class UserTest {
     @Test
     void whenSaveUserWithBirthdayGraterThanActualDate_thenThrowException() throws IllegalArgumentException {
         //Given
-        User userTest = new User(null,"Undefeated", "David", LocalDate.parse("2021-09-25"),new ArrayList<>());
+        User userTest = new User(null,"Undefeated", "David", "s3cr3t",LocalDate.parse("2021-09-25"),new ArrayList<>());
 
         //When
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {

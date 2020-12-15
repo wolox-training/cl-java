@@ -55,6 +55,13 @@ public class User {
     private String name;
 
     /**
+     *
+     */
+    @NotNull
+    @ApiModelProperty(notes = "Password of the user", required = true, example = "s3cr3t")
+    private String password;
+
+    /**
      * Birthday of the user
      */
     @NotNull
@@ -76,11 +83,12 @@ public class User {
     public User() {
     }
 
-    public User(Long id, String username, String name, LocalDate birthdate,
-            List<Book> library) {
+    public User(Long id, String username, String name, String password,
+            LocalDate birthdate, List<Book> library) {
         this.id = id;
         this.username = username;
         this.name = name;
+        this.password = password;
         this.birthdate = birthdate;
         this.library = library;
     }
@@ -110,6 +118,14 @@ public class User {
         this.name = name;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        Preconditions.checkNotNull(password, "Password must not be null");
+        this.password = password;
+    }
     public LocalDate getBirthdate() {
         return birthdate;
     }
