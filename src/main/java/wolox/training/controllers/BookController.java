@@ -5,9 +5,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,10 +23,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import wolox.training.dtos.BookDTO;
 import wolox.training.exceptions.responses.BookIdMismatchException;
 import wolox.training.exceptions.responses.BookNotFoundException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
+import wolox.training.services.OpenLibraryService;
 
 @RestController
 @RequestMapping("/api/books")
@@ -32,9 +38,16 @@ public class BookController {
     private static final String BOOK_NOT_FOUND_MSG = "Book not found";
     private static final String ID_MISMATCH_MSG = "Book Id mismatched";
     private static final String SUCCESSFULLY_DELETED_MSG = "Book Successfully Deleted";
+    private static final String CREATED_LOCATION_URI = "http:localhost:8081/api/books/%s";
 
     @Autowired
     private BookRepository bookRepository;
+
+    @Autowired
+    private OpenLibraryService openLibraryService;
+
+    @Autowired
+    private ModelMapper modMapper;
 
     /**
      * This method is used to greet someone by the name of by default world.
@@ -51,6 +64,25 @@ public class BookController {
         return "greeting";
     }
 
+    @ApiOperation(value = "Get a book by ISBN", response = BookDTO.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieve book"),
+            @ApiResponse(code = 201, message = "Successfully created book"),
+            @ApiResponse(code = 404, message = "Book not found"),
+            @ApiResponse(code = 409, message = "An attribute present a conflict")
+    })
+    @GetMapping("/byIsbn")
+    public ResponseEntity<Book> getBookByIsbn(
+            @RequestParam("isbn") String isbn) {
+        Optional<Book> response = bookRepository.findBookByIsbn(isbn);
+        if (response.isPresent()) {
+
+            return ResponseEntity.ok(response.get());
+        } else {
+            Book responseExternal = openLibraryService.getBookByISBN(isbn);
+            return new ResponseEntity<>(responseExternal,HttpStatus.CREATED);
+        }
+    }
 
     /**
      * This method is used to get a {@link Book} by the id.

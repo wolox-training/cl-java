@@ -129,7 +129,7 @@ public class Book {
     public void setAuthor(String author) {
         Preconditions.checkArgument(!author.isEmpty(), "Author must not be empty");
         Preconditions.checkNotNull(author,"Author must not be null");
-        Preconditions.checkArgument(author.matches("[a-zA-Z]*"), "Author must not have numbers or invalid characters");
+        Preconditions.checkArgument(author.matches("[a-zA-Z. ]*"), "Author must not have numbers or invalid characters");
         this.author = author;
     }
 
