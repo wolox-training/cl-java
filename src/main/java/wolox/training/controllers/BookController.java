@@ -5,11 +5,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +36,6 @@ public class BookController {
     private static final String BOOK_NOT_FOUND_MSG = "Book not found";
     private static final String ID_MISMATCH_MSG = "Book Id mismatched";
     private static final String SUCCESSFULLY_DELETED_MSG = "Book Successfully Deleted";
-    private static final String CREATED_LOCATION_URI = "http:localhost:8081/api/books/%s";
 
     @Autowired
     private BookRepository bookRepository;
@@ -46,8 +43,6 @@ public class BookController {
     @Autowired
     private OpenLibraryService openLibraryService;
 
-    @Autowired
-    private ModelMapper modMapper;
 
     /**
      * This method is used to greet someone by the name of by default world.

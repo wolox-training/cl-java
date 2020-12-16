@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
 import wolox.training.repositories.UserRepository;
+import wolox.training.services.OpenLibraryService;
 
 @WebMvcTest(BookController.class)
 class BookControllerTest {
@@ -37,6 +39,9 @@ class BookControllerTest {
 
     @MockBean
     private BookRepository bookRepository;
+
+    @MockBean
+    private OpenLibraryService openLibraryService;
 
     @WithMockUser(value = "iskandar")
     @Test
