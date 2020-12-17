@@ -10,6 +10,8 @@ import static wolox.training.contants.ConstantsTest.SUBTITLE_BOOK_TEST;
 import static wolox.training.contants.ConstantsTest.TITLE_BOOK_TEST;
 import static wolox.training.contants.ConstantsTest.YEAR_BOOK_TEST;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,13 +33,15 @@ class BookTest {
     private BookRepository bookRepository;
 
     private Book bookTest;
+    private Book bookTestSecond;
 
     @BeforeEach
     void setUp() {
         bookTest = new Book(null,GENRE_BOOK_TEST,AUTHOR_BOOK_TEST, IMAGE_BOOK_TEST, TITLE_BOOK_TEST,
                 SUBTITLE_BOOK_TEST, SUBTITLE_BOOK_TEST,YEAR_BOOK_TEST, PAGES_BOOK_TEST,ISBN_BOOK_TEST);
 
-
+        bookTestSecond = new Book(null,GENRE_BOOK_TEST,AUTHOR_BOOK_TEST, IMAGE_BOOK_TEST, TITLE_BOOK_TEST,
+                SUBTITLE_BOOK_TEST, SUBTITLE_BOOK_TEST,YEAR_BOOK_TEST, PAGES_BOOK_TEST,ISBN_BOOK_TEST);
     }
 
     @Test
@@ -121,5 +125,23 @@ class BookTest {
         });
         //then
         assertTrue(exception instanceof IllegalArgumentException);
+    }
+
+    @Test
+    public void whenFindByPublisherGenreAndYear_thenReturnListBook(){
+        //Given
+        List<Book> booksTest = new ArrayList<>();
+        testEntityManager.persist(bookTest);
+        booksTest.add(bookTest);
+        testEntityManager.persist(bookTestSecond);
+        booksTest.add(bookTestSecond);
+        testEntityManager.flush();
+
+        //when
+        List<Book> booksFound = bookRepository.findByPublisherAndGenreAndYear(
+                bookTest.getPublisher(), bookTest.getGenre(), bookTest.getYear());
+
+        //then
+        assertEquals(booksFound,booksTest);
     }
 }
