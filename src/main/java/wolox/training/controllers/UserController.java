@@ -1,5 +1,10 @@
 package wolox.training.controllers;
 
+import static wolox.training.contants.ConstantsMain.ID_MISMATCHED_MSG;
+import static wolox.training.contants.ConstantsMain.SUCCESSFULLY_USER_DELETED_MSG;
+import static wolox.training.contants.ConstantsMain.USERNAME_TAKEN_MSG;
+import static wolox.training.contants.ConstantsMain.USER_NOT_FOUND_MSG;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -31,10 +36,7 @@ import wolox.training.repositories.UserRepository;
 @Api(value = "User microservice", tags = "This Services REST has a CRUD for Users")
 public class UserController {
 
-    private static final String USER_NOT_FOUND_MSG = "User not found";
-    private static final String ID_MISMATCHED_MSG = "User Id mismatched";
-    private static final String SUCCESSFULLY_DELETED_MSG = "User Successfully Deleted";
-    private static final String USERNAME_TAKEN_MSG = "The username is already taken";
+
 
     @Autowired
     private UserRepository userRepository;
@@ -52,7 +54,8 @@ public class UserController {
     @ApiOperation(value = "Get an user by ID", response = User.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieve user"),
-            @ApiResponse(code = 404, message = "User not found")
+            @ApiResponse(code = 404, message = "User not found"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(
@@ -72,7 +75,8 @@ public class UserController {
     @ApiOperation(value = "Get an user by the username", response = User.class, responseContainer = "List")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieve user"),
-            @ApiResponse(code = 404, message = "User not found")
+            @ApiResponse(code = 404, message = "User not found"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @GetMapping
     public ResponseEntity<List<User>> getAllUsersOrUserByUsername(
@@ -98,7 +102,8 @@ public class UserController {
     @ApiOperation(value = "Add an user", response = User.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully created user"),
-            @ApiResponse(code = 409, message = "Username already taken")
+            @ApiResponse(code = 409, message = "Username already taken"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @PostMapping
     public ResponseEntity<User> addUser(
@@ -130,7 +135,8 @@ public class UserController {
             @ApiResponse(code = 200, message = "Successfully updated user"),
             @ApiResponse(code = 400, message = "ID of user an ID passed mismatched"),
             @ApiResponse(code = 404, message = "User not found"),
-            @ApiResponse(code = 409, message = "Username already taken")
+            @ApiResponse(code = 409, message = "Username already taken"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(
@@ -161,7 +167,8 @@ public class UserController {
     @ApiOperation(value = "Delete user by ID", response = String.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully deleted user"),
-            @ApiResponse(code = 404, message = "User not found")
+            @ApiResponse(code = 404, message = "User not found"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUserById(
@@ -169,7 +176,7 @@ public class UserController {
             @PathVariable("id") Long id) {
         User isUserCreated = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MSG));
         userRepository.deleteById(isUserCreated.getId());
-        return ResponseEntity.ok(SUCCESSFULLY_DELETED_MSG);
+        return ResponseEntity.ok(SUCCESSFULLY_USER_DELETED_MSG);
     }
 
     /**
@@ -196,7 +203,8 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully added book to user library"),
             @ApiResponse(code = 400, message = "Book is already owned by the user"),
-            @ApiResponse(code = 404, message = "User not found")
+            @ApiResponse(code = 404, message = "User not found"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @PostMapping("/{id}/addBook")
     public ResponseEntity<User> addBookToLibraryUser(
@@ -231,7 +239,8 @@ public class UserController {
     @ApiOperation(value = "Remove a book from the user library", response = User.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully removed book from user library"),
-            @ApiResponse(code = 404, message = "User not found")
+            @ApiResponse(code = 404, message = "User not found"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @DeleteMapping("/{id}/removeBook")
     public ResponseEntity<User> removeBookFromLibraryUser(

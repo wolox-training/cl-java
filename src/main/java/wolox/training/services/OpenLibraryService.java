@@ -5,5 +5,5 @@ import wolox.training.models.Book;
 
 public interface OpenLibraryService {
 
-    Book getBookByISBN(String isbn);
+    BookDTO bookInfo(String isbn);
 }

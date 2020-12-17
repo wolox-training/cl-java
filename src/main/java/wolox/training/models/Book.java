@@ -1,5 +1,26 @@
 package wolox.training.models;
 
+import static wolox.training.contants.ConstantsMain.ATTRIBUTE_CONFLICT_MSG;
+import static wolox.training.contants.ConstantsMain.AUTHOR_EMPTY_MSG;
+import static wolox.training.contants.ConstantsMain.AUTHOR_INVALID_CHARACTERS_MSG;
+import static wolox.training.contants.ConstantsMain.AUTHOR_NULL_MSG;
+import static wolox.training.contants.ConstantsMain.IMAGE_EMPTY_MSG;
+import static wolox.training.contants.ConstantsMain.IMAGE_MSG;
+import static wolox.training.contants.ConstantsMain.IMAGE_NULL_MSG;
+import static wolox.training.contants.ConstantsMain.ISBN_EMPTY_MSG;
+import static wolox.training.contants.ConstantsMain.ISBN_NULL_MSG;
+import static wolox.training.contants.ConstantsMain.PAGES_NULL_MSG;
+import static wolox.training.contants.ConstantsMain.PAGES_ZERO_MSG;
+import static wolox.training.contants.ConstantsMain.PUBLISHER_EMPTY_MSG;
+import static wolox.training.contants.ConstantsMain.PUBLISHER_NULL_MSG;
+import static wolox.training.contants.ConstantsMain.SUBTITLE_EMPTY_MSG;
+import static wolox.training.contants.ConstantsMain.SUBTITLE_NULL_MSG;
+import static wolox.training.contants.ConstantsMain.TITLE_EMPTY_MSG;
+import static wolox.training.contants.ConstantsMain.TITLE_NULL_MSG;
+import static wolox.training.contants.ConstantsMain.YEAR_BEFORE_MSG;
+import static wolox.training.contants.ConstantsMain.YEAR_EMPTY_MSG;
+import static wolox.training.contants.ConstantsMain.YEAR_NULL_MSG;
+
 import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -9,6 +30,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import wolox.training.dtos.BookDTO;
+import wolox.training.exceptions.responses.BookAttributeConflict;
 
 /**
  * This class is used to have the model of a Book
@@ -105,6 +128,21 @@ public class Book {
         this.isbn = isbn;
     }
 
+    public Book(BookDTO bookToMap) {
+        try{
+            this.author = bookToMap.getAuthors().get(0);
+            this.image = IMAGE_MSG;
+            this.title = bookToMap.getTitle();
+            this.subtitle = bookToMap.getSubtitle();
+            this.publisher = bookToMap.getPublishers().get(0);
+            this.year = bookToMap.getYear();
+            this.pages = bookToMap.getPages();
+            this.isbn = bookToMap.getIsbn();
+        } catch (RuntimeException ex) {
+            throw new BookAttributeConflict(ATTRIBUTE_CONFLICT_MSG);
+        }
+    }
+
     public Long getId() {
         return id;
     }
@@ -127,9 +165,9 @@ public class Book {
     }
 
     public void setAuthor(String author) {
-        Preconditions.checkArgument(!author.isEmpty(), "Author must not be empty");
-        Preconditions.checkNotNull(author,"Author must not be null");
-        Preconditions.checkArgument(author.matches("[a-zA-Z. ]*"), "Author must not have numbers or invalid characters");
+        Preconditions.checkArgument(!author.isEmpty(), AUTHOR_EMPTY_MSG);
+        Preconditions.checkNotNull(author,AUTHOR_NULL_MSG);
+        Preconditions.checkArgument(author.matches("[a-zA-Z. ]*"), AUTHOR_INVALID_CHARACTERS_MSG);
         this.author = author;
     }
 
@@ -138,8 +176,9 @@ public class Book {
     }
 
     public void setImage(String image) {
-
-        this.image = Preconditions.checkNotNull(image, "Image must not be null");
+        Preconditions.checkNotNull(image, IMAGE_NULL_MSG);
+        Preconditions.checkArgument(!image.isEmpty(), IMAGE_EMPTY_MSG);
+        this.image = image;
     }
 
     public String getTitle() {
@@ -147,8 +186,8 @@ public class Book {
     }
 
     public void setTitle(String title) {
-        Preconditions.checkNotNull(title, "Title must not be null");
-        Preconditions.checkArgument(!title.isEmpty(), "Title must not be empty");
+        Preconditions.checkNotNull(title, TITLE_NULL_MSG);
+        Preconditions.checkArgument(!title.isEmpty(), TITLE_EMPTY_MSG);
         this.title = title;
     }
 
@@ -157,8 +196,8 @@ public class Book {
     }
 
     public void setSubtitle(String subtitle) {
-        Preconditions.checkNotNull(subtitle, "Subtitle must not be null");
-        Preconditions.checkArgument(!subtitle.isEmpty(), "Subtitle must not be empty");
+        Preconditions.checkNotNull(subtitle, SUBTITLE_NULL_MSG);
+        Preconditions.checkArgument(!subtitle.isEmpty(), SUBTITLE_EMPTY_MSG);
         this.subtitle = subtitle;
     }
 
@@ -167,8 +206,8 @@ public class Book {
     }
 
     public void setPublisher(String publisher) {
-        Preconditions.checkNotNull(publisher, "Publisher must not be null");
-        Preconditions.checkArgument(!publisher.isEmpty(), "Publisher must not be empty");
+        Preconditions.checkNotNull(publisher, PUBLISHER_NULL_MSG);
+        Preconditions.checkArgument(!publisher.isEmpty(), PUBLISHER_EMPTY_MSG);
         this.publisher = publisher;
     }
 
@@ -178,9 +217,9 @@ public class Book {
 
     public void setYear(String year) {
 
-        Preconditions.checkNotNull(year,"Year must not be null");
-        Preconditions.checkArgument(!year.isEmpty(), "Year must not be empty");
-        Preconditions.checkArgument(Integer.parseInt(year)<= LocalDate.now().getYear(), "Year must be less or equal than actual");
+        Preconditions.checkNotNull(year,YEAR_NULL_MSG);
+        Preconditions.checkArgument(!year.isEmpty(), YEAR_EMPTY_MSG);
+        Preconditions.checkArgument(Integer.parseInt(year)<= LocalDate.now().getYear(), YEAR_BEFORE_MSG);
         this.year = year;
     }
 
@@ -189,8 +228,8 @@ public class Book {
     }
 
     public void setPages(Integer pages) {
-        Preconditions.checkNotNull(pages, "Pages must not be null");
-        Preconditions.checkArgument(pages>0,"Number of pages must be greater than 0");
+        Preconditions.checkNotNull(pages, PAGES_NULL_MSG);
+        Preconditions.checkArgument(pages>0,PAGES_ZERO_MSG);
         this.pages = pages;
     }
 
@@ -199,8 +238,8 @@ public class Book {
     }
 
     public void setIsbn(String isbn) {
-        Preconditions.checkNotNull(isbn, "ISBN must not be null");
-        Preconditions.checkArgument(!isbn.isEmpty(), "ISBN must not be empty");
+        Preconditions.checkNotNull(isbn, ISBN_NULL_MSG);
+        Preconditions.checkArgument(!isbn.isEmpty(), ISBN_EMPTY_MSG);
         this.isbn = isbn;
     }
 

@@ -1,5 +1,15 @@
 package wolox.training.models;
 
+import static wolox.training.contants.ConstantsMain.BIRTHDAY_BEFORE_MSG;
+import static wolox.training.contants.ConstantsMain.BIRTHDAY_NULL_MSG;
+import static wolox.training.contants.ConstantsMain.NAME_EMPTY_MSG;
+import static wolox.training.contants.ConstantsMain.NAME_INVALID_CHARACTERS_MSG;
+import static wolox.training.contants.ConstantsMain.NAME_NULL_MSG;
+import static wolox.training.contants.ConstantsMain.PASSWORD_EMPTY_MSG;
+import static wolox.training.contants.ConstantsMain.PASSWORD_NULL_MSG;
+import static wolox.training.contants.ConstantsMain.USERNAME_EMPTY_MSG;
+import static wolox.training.contants.ConstantsMain.USERNAME_NULL_MSG;
+
 import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -102,8 +112,8 @@ public class User {
     }
 
     public void setUsername(String username) {
-        Preconditions.checkNotNull(username, "Username must not be null");
-        Preconditions.checkArgument(!username.isEmpty(), "Username must not be empty");
+        Preconditions.checkNotNull(username, USERNAME_NULL_MSG);
+        Preconditions.checkArgument(!username.isEmpty(), USERNAME_EMPTY_MSG);
         this.username = username;
     }
 
@@ -112,9 +122,9 @@ public class User {
     }
 
     public void setName(String name) {
-        Preconditions.checkNotNull(name, "Name must not be null");
-        Preconditions.checkArgument(!name.isEmpty(), "Name must not be empty");
-        Preconditions.checkArgument(name.matches("[a-zA-Z]*"),"Name must not have numbers or invalid characters");
+        Preconditions.checkNotNull(name, NAME_NULL_MSG);
+        Preconditions.checkArgument(!name.isEmpty(), NAME_EMPTY_MSG);
+        Preconditions.checkArgument(name.matches("[a-zA-Z. ]*"),NAME_INVALID_CHARACTERS_MSG);
         this.name = name;
     }
 
@@ -123,7 +133,8 @@ public class User {
     }
 
     public void setPassword(String password) {
-        Preconditions.checkNotNull(password, "Password must not be null");
+        Preconditions.checkNotNull(password, PASSWORD_NULL_MSG);
+        Preconditions.checkArgument(!password.isEmpty(), PASSWORD_EMPTY_MSG);
         this.password = password;
     }
     public LocalDate getBirthdate() {
@@ -131,9 +142,9 @@ public class User {
     }
 
     public void setBirthdate(LocalDate birthdate) {
-        Preconditions.checkNotNull(birthdate, "Birthday must not be null");
+        Preconditions.checkNotNull(birthdate, BIRTHDAY_NULL_MSG);
         LocalDate actual = LocalDate.now();
-        Preconditions.checkArgument(birthdate.isBefore(actual),"Birthday must be less than actual Date");
+        Preconditions.checkArgument(birthdate.isBefore(actual),BIRTHDAY_BEFORE_MSG);
         this.birthdate = birthdate;
     }
 
@@ -229,7 +240,9 @@ public class User {
      */
     private Book getBookFromCollection(Book book) {
         for (Book b: this.library) {
-            if (b.getAuthor().equals(book.getAuthor())){
+            if (b.getAuthor().equals(book.getAuthor()) &&
+                    b.getIsbn().equals(book.getIsbn()) &&
+                    b.getTitle().equals(book.getTitle())){
                 return b;
             }
         }

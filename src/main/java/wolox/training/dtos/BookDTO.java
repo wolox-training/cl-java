@@ -1,6 +1,12 @@
 package wolox.training.dtos;
 
+import static wolox.training.contants.ConstantsMain.ATTRIBUTE_CONFLICT_MSG;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import wolox.training.exceptions.responses.BookAttributeConflict;
 
 public class BookDTO {
 
@@ -26,6 +32,36 @@ public class BookDTO {
         this.pages = pages;
         this.authors = authors;
     }
+
+    public BookDTO(LinkedHashMap data, String isbn) {
+        try {
+            List<String> authorNames = new ArrayList<>();
+            List<String> publisherNames = new ArrayList<>();
+            this.isbn = isbn;
+            this.title = data.get("title").toString();
+            this.subtitle = data.get("subtitle").toString();
+            this.year = data.get("publish_date").toString();
+            this.pages = (Integer) data.get("number_of_pages");
+            List<LinkedHashMap> publishers = new ArrayList<>(
+                    (Collection<? extends LinkedHashMap>) data.get("publishers")
+            );
+            for (LinkedHashMap p : publishers) {
+                publisherNames.add(p.get("name").toString());
+            }
+            this.publishers = publisherNames;
+
+            List<LinkedHashMap> authors = new ArrayList<>(
+                    (Collection<? extends LinkedHashMap>) data.get("authors")
+            );
+            for (LinkedHashMap a : authors) {
+                authorNames.add(a.get("name").toString());
+            }
+            this.authors = authorNames;
+        } catch (RuntimeException ex) {
+            throw new BookAttributeConflict(ATTRIBUTE_CONFLICT_MSG);
+        }
+    }
+
 
     public String getIsbn() {
         return isbn;

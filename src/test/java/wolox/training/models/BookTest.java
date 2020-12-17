@@ -1,11 +1,16 @@
 package wolox.training.models;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static wolox.training.contants.ConstantsTest.AUTHOR_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.GENRE_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.IMAGE_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.ISBN_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.PAGES_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.SUBTITLE_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.TITLE_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.YEAR_BOOK_TEST;
 
-import javax.persistence.PersistenceException;
-import org.hibernate.PropertyValueException;
 import javax.validation.ConstraintViolationException;
-import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +18,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.dao.DataIntegrityViolationException;
 import wolox.training.repositories.BookRepository;
 
 @DataJpaTest
@@ -26,14 +30,19 @@ class BookTest {
     @Autowired
     private BookRepository bookRepository;
 
+    private Book bookTest;
+
     @BeforeEach
     void setUp() {
+        bookTest = new Book(null,GENRE_BOOK_TEST,AUTHOR_BOOK_TEST, IMAGE_BOOK_TEST, TITLE_BOOK_TEST,
+                SUBTITLE_BOOK_TEST, SUBTITLE_BOOK_TEST,YEAR_BOOK_TEST, PAGES_BOOK_TEST,ISBN_BOOK_TEST);
+
+
     }
 
     @Test
     public void whenSaveBook_thenReturnBook(){
         //Given
-        Book bookTest = new Book(null,"Mystery","Paolo", "image.png", "Sacred Stone", "-", "Salamander","2000", 250,"123456789");
         testEntityManager.persist(bookTest);
         testEntityManager.flush();
 
@@ -43,13 +52,12 @@ class BookTest {
         //then
         assertEquals(bookSaved.getGenre(),bookTest.getGenre());
         assertEquals(bookSaved.getPublisher(),bookTest.getPublisher());
-        System.out.println("whenSaveBook passed");
     }
 
     @Test
     public void whenSaveBookWithGenreNull_thenReturnBook(){
         //Given
-        Book bookTest = new Book(null,null,"Paolo", "image.png", "Sacred Stone", "-", "Salamander","2000", 250,"123456789");
+        bookTest.setGenre(null);
         testEntityManager.persist(bookTest);
         testEntityManager.flush();
 
@@ -59,13 +67,11 @@ class BookTest {
         //then
         assertEquals(bookSaved.getAuthor(),bookTest.getAuthor());
         assertEquals(bookSaved.getTitle(),bookTest.getTitle());
-        System.out.println("whenSaveBookWithGenreNull passed");
     }
 
     @Test
     public void whenFindByAuthor_thenReturnBook(){
         //Given
-        Book bookTest = new Book(null,"Mystery","Paolo", "image.png", "Sacred Stone", "-", "Salamander","2000", 250,"123456789");
         testEntityManager.persist(bookTest);
         testEntityManager.flush();
 
@@ -74,46 +80,40 @@ class BookTest {
 
         //then
         assertEquals(bookFound.getAuthor(),bookTest.getAuthor());
-        System.out.println("whenFinByAuthor passed");
     }
 
 
     @Test()
     public void whenSaveBookWithTitleNull_thenThrowException() throws ConstraintViolationException {
         //Given
-        Book bookTest = new Book(null,"Mystery","David", "image.png", null, "-", "Salamander","2000", 250,"123456789");
-
+        Book bookTestTitleNull = new Book(null,GENRE_BOOK_TEST,AUTHOR_BOOK_TEST, IMAGE_BOOK_TEST, null,
+                SUBTITLE_BOOK_TEST, SUBTITLE_BOOK_TEST,YEAR_BOOK_TEST, PAGES_BOOK_TEST,ISBN_BOOK_TEST);
         //when
         ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () -> {
-            bookRepository.save(bookTest);
+            bookRepository.save(bookTestTitleNull);
             testEntityManager.flush();
         });
 
         //then
         assertTrue(exception instanceof ConstraintViolationException);
-        System.out.println("whenSaveBookWithTitleNull passed");
     }
 
     @Test()
     public void whenSaveBookWithIsbnNull_thenThrowException() throws ConstraintViolationException {
         //Given
-        Book bookTest = new Book(null,"Mystery","David", "image.png", "title", "-", "Salamander","2000", 250,null);
-
+        Book bookTestIsbnNull = new Book(null,GENRE_BOOK_TEST,AUTHOR_BOOK_TEST, IMAGE_BOOK_TEST, TITLE_BOOK_TEST,
+                SUBTITLE_BOOK_TEST, SUBTITLE_BOOK_TEST,YEAR_BOOK_TEST, PAGES_BOOK_TEST,null);
         //when
         ConstraintViolationException exception = assertThrows(ConstraintViolationException.class, () -> {
-            bookRepository.save(bookTest);
+            bookRepository.save(bookTestIsbnNull);
             testEntityManager.flush();
         });
         //then
         assertTrue(exception instanceof ConstraintViolationException);
-        System.out.println("whenSaveBookWithIsbnNull passed");
     }
 
     @Test()
     public void whenSaveBookWithPagesZero_thenThrowException() throws IllegalArgumentException{
-        //Given
-        Book bookTest = new Book(null,"Mystery","David", "image.png", "title", "-", "Salamander","2000", null,"123456789");
-
         //when
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             bookTest.setPages(0);
@@ -121,6 +121,5 @@ class BookTest {
         });
         //then
         assertTrue(exception instanceof IllegalArgumentException);
-        System.out.println("whenSaveBookWithPagesZero passed");
     }
 }

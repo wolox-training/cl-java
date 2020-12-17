@@ -6,13 +6,23 @@ import static org.hamcrest.Matchers.isA;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static wolox.training.contants.ConstantsTest.AUTHOR_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.GENRE_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.IMAGE_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.ISBN_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.PAGES_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.PUBLISHER_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.SUBTITLE_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.TITLE_BOOK_TEST;
+import static wolox.training.contants.ConstantsTest.URL_BOOK;
+import static wolox.training.contants.ConstantsTest.YEAR_BOOK_TEST;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -43,71 +53,73 @@ class BookControllerTest {
     @MockBean
     private OpenLibraryService openLibraryService;
 
+    private Book bookTest;
+    private Book bookTestId;
+
+    @BeforeEach
+    public void setUp () {
+        bookTest = new Book (null, GENRE_BOOK_TEST, AUTHOR_BOOK_TEST, IMAGE_BOOK_TEST, TITLE_BOOK_TEST,
+                SUBTITLE_BOOK_TEST, PUBLISHER_BOOK_TEST, YEAR_BOOK_TEST, PAGES_BOOK_TEST, ISBN_BOOK_TEST);
+
+        bookTestId = new Book(1L, GENRE_BOOK_TEST, AUTHOR_BOOK_TEST, IMAGE_BOOK_TEST, TITLE_BOOK_TEST,
+                SUBTITLE_BOOK_TEST, PUBLISHER_BOOK_TEST, YEAR_BOOK_TEST, PAGES_BOOK_TEST, ISBN_BOOK_TEST);
+    }
+
     @WithMockUser(value = "iskandar")
     @Test
     void whenGetAllBooks_thenReturnJsonArray() throws Exception {
         //Given
-        Book bookTest = new Book(null,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
         List<Book> allBooksTest = Arrays.asList(bookTest);
 
         given(bookRepository.findAll()).willReturn(allBooksTest);
 
         // When + Then
-        mvc.perform(MockMvcRequestBuilders.get("/api/books")
+        mvc.perform(MockMvcRequestBuilders.get(URL_BOOK)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].title", is(bookTest.getTitle())));
 
-        System.out.println("whenGetAllBooks Passed");
     }
 
     @Test
     void whenGetAllBooksWithoutAuthentication_thenReturnUnauthorized() throws Exception {
         //Given
-        Book bookTest = new Book(null,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
         List<Book> allBooksTest = Arrays.asList(bookTest);
 
         given(bookRepository.findAll()).willReturn(allBooksTest);
 
         // When + Then
-        mvc.perform(MockMvcRequestBuilders.get("/api/books")
+        mvc.perform(MockMvcRequestBuilders.get(URL_BOOK)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
 
-        System.out.println("whenGetAllBooksWithoutAuthentication Passed");
     }
 
     @WithMockUser(value = "iskandar")
     @Test
     void whenGetABookByAuthor_thenReturnJsonArray() throws Exception {
         //Given
-        Book bookTest = new Book(null,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
-
         given(bookRepository.findFirstByAuthor("Paolo")).willReturn(java.util.Optional.of(bookTest));
 
         // When + Then
-        mvc.perform(MockMvcRequestBuilders.get("/api/books?author=Paolo")
+        mvc.perform(MockMvcRequestBuilders.get(URL_BOOK+"?author="+AUTHOR_BOOK_TEST)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].author", is(bookTest.getAuthor())));
-        System.out.println("whenGetABookByAuthor Passed");
     }
 
     @WithMockUser(value = "iskandar")
     @Test
     void whenGetABookByAuthorNonExist_thenThrowBookNotFound() throws Exception {
         //Given
-        Book bookTest = new Book(null,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
-
         given(bookRepository.findFirstByAuthor("Paolo")).willReturn(java.util.Optional.of(bookTest));
 
         // When + Then
-        mvc.perform(MockMvcRequestBuilders.get("/api/books?author=Francisco")
+        mvc.perform(MockMvcRequestBuilders.get(URL_BOOK+"?author=Francisco")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
-        System.out.println("whenGetABookByAuthorNonExist Passed");
     }
 
 
@@ -115,118 +127,100 @@ class BookControllerTest {
     @Test
     void whenGetABookById_thenReturnJson() throws Exception {
         //Given
-        Book bookTest = new Book(1L,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
-
-        given(bookRepository.findById(bookTest.getId())).willReturn(java.util.Optional.of(bookTest));
+        given(bookRepository.findById(bookTestId.getId())).willReturn(java.util.Optional.of(bookTestId));
 
         // When + Then
-        mvc.perform(MockMvcRequestBuilders.get("/api/books/1")
+        mvc.perform(MockMvcRequestBuilders.get(URL_BOOK+"/1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
                 .andExpect(jsonPath("$", isA(LinkedHashMap.class)))
                 .andExpect(jsonPath("$.*").exists())
                 .andExpect(jsonPath("$.*", hasSize(is(10))))
-                .andExpect(jsonPath("$.id", is(bookTest.getId().intValue())))
-                .andExpect(jsonPath("$.image", is(bookTest.getImage())));
-        System.out.println("whenGetABookById Passed");
+                .andExpect(jsonPath("$.id", is(bookTestId.getId().intValue())))
+                .andExpect(jsonPath("$.image", is(bookTestId.getImage())));
     }
 
     @Test
     void whenAddABook_thenReturnOk() throws Exception {
         //Given
-        Book bookTest = new Book(1L,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
+        given(bookRepository.save(bookTestId)).willReturn(bookTestId);
 
-        given(bookRepository.save(bookTest)).willReturn(bookTest);
-
-        String json = mapper.writeValueAsString(bookTest);
+        String json = mapper.writeValueAsString(bookTestId);
 
         // When + Then
-        mvc.perform(MockMvcRequestBuilders.post("/api/books")
+        mvc.perform(MockMvcRequestBuilders.post(URL_BOOK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        System.out.println("whenAddABook Passed");
     }
 
     @WithMockUser(value = "iskandar")
     @Test
     void whenUpdateABook_thenReturnOk() throws Exception {
         //Given
-        Book bookTest = new Book(1L,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
+        given(bookRepository.save(bookTestId)).willReturn(bookTestId);
 
-        given(bookRepository.save(bookTest)).willReturn(bookTest);
+        bookTestId.setTitle("Chamber of Secrets");
+        given(bookRepository.save(bookTestId)).willReturn(bookTestId);
+        given(bookRepository.findById(bookTestId.getId())).willReturn(java.util.Optional.of(bookTestId));
 
-        bookTest.setTitle("Chamber of Secrets");
-        given(bookRepository.save(bookTest)).willReturn(bookTest);
-        given(bookRepository.findById(bookTest.getId())).willReturn(java.util.Optional.of(bookTest));
-
-        String json = mapper.writeValueAsString(bookTest);
+        String json = mapper.writeValueAsString(bookTestId);
 
         // When + Then
 
-        mvc.perform(MockMvcRequestBuilders.put("/api/books/1")
+        mvc.perform(MockMvcRequestBuilders.put(URL_BOOK+"/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        System.out.println("whenUpdateABook Passed");
     }
 
     @WithMockUser(value = "iskandar")
     @Test
     void whenUpdateABookIdMismatch_thenThrowIdMismatched() throws Exception {
         //Given
-        Book bookTest = new Book(1L,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
+        given(bookRepository.save(bookTestId)).willReturn(bookTestId);
 
-        given(bookRepository.save(bookTest)).willReturn(bookTest);
+        bookTestId.setTitle("Chamber of Secrets");
+        given(bookRepository.save(bookTestId)).willReturn(bookTestId);
+        given(bookRepository.findById(bookTestId.getId())).willReturn(java.util.Optional.of(bookTestId));
 
-        bookTest.setTitle("Chamber of Secrets");
-        given(bookRepository.save(bookTest)).willReturn(bookTest);
-        given(bookRepository.findById(bookTest.getId())).willReturn(java.util.Optional.of(bookTest));
-
-        String json = mapper.writeValueAsString(bookTest);
+        String json = mapper.writeValueAsString(bookTestId);
 
         // When + Then
 
-        mvc.perform(MockMvcRequestBuilders.put("/api/books/2")
+        mvc.perform(MockMvcRequestBuilders.put(URL_BOOK+"/2")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-        System.out.println("whenUpdateABookIdMismatch Passed");
     }
 
     @WithMockUser(value = "iskandar")
     @Test
     void whenDeleteABookById_thenReturnString() throws Exception {
         //Given
-        Book bookTest = new Book(1L,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
-
-        given(bookRepository.findById(bookTest.getId())).willReturn(java.util.Optional.of(bookTest));
+        given(bookRepository.findById(bookTestId.getId())).willReturn(java.util.Optional.of(bookTestId));
 
         // When + Then
-        mvc.perform(MockMvcRequestBuilders.delete("/api/books/1")
+        mvc.perform(MockMvcRequestBuilders.delete(URL_BOOK+"/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        System.out.println("whenDeleteABookById Passed");
     }
 
     @Test
     void whenDeleteABookByIdWithoutAuthentication_thenThrowUnauthorized() throws Exception {
         //Given
-        Book bookTest = new Book(1L,"Mystery","Paolo", "image.png", "Sorcerer's Stone", "-", "Salamander","2000", 250,"123456789");
-
-        given(bookRepository.findById(bookTest.getId())).willReturn(java.util.Optional.of(bookTest));
+        given(bookRepository.findById(bookTestId.getId())).willReturn(java.util.Optional.of(bookTestId));
 
         // When + Then
-        mvc.perform(MockMvcRequestBuilders.delete("/api/books/1")
+        mvc.perform(MockMvcRequestBuilders.delete(URL_BOOK+"/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
-        System.out.println("whenDeleteABookByIdWithoutAuthentication Passed");
     }
 
 }
