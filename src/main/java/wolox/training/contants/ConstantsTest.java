@@ -23,6 +23,8 @@ public final class ConstantsTest {
     //UserAttributes
     public static String USERNAME_USER_TEST = "iskandar";
     public static String USERNAME_SECOND_USER_TEST = "Gabo";
+    public static String USERNAME_THIRD_USER_TEST = "Abba";
+    public static String USERNAME_FOURTH_USER_TEST = "Naba";
     public static String NAME_USER_TEST = "David";
     public static String NAME_SECOND_USER_TEST = "Santiago";
     public static String PASSWORD_USER_TEST = "s3cr3t";

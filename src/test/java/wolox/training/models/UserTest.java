@@ -4,11 +4,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static wolox.training.contants.ConstantsTest.NAME_SECOND_USER_TEST;
 import static wolox.training.contants.ConstantsTest.NAME_USER_TEST;
 import static wolox.training.contants.ConstantsTest.PASSWORD_USER_TEST;
+import static wolox.training.contants.ConstantsTest.USERNAME_FOURTH_USER_TEST;
 import static wolox.training.contants.ConstantsTest.USERNAME_SECOND_USER_TEST;
+import static wolox.training.contants.ConstantsTest.USERNAME_THIRD_USER_TEST;
 import static wolox.training.contants.ConstantsTest.USERNAME_USER_TEST;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.PersistenceException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,11 +34,14 @@ class UserTest {
     private UserRepository userRepository;
 
     private User userTest;
+    private User userTestSecond;
+    private User userTestThird;
 
     @BeforeEach
     void setUp() {
         userTest = new User(null,USERNAME_SECOND_USER_TEST,NAME_USER_TEST,PASSWORD_USER_TEST,LocalDate.parse("2004-09-25"), new ArrayList<>());
-
+        userTestSecond = new User(null,USERNAME_THIRD_USER_TEST,NAME_USER_TEST,PASSWORD_USER_TEST,LocalDate.parse("2004-09-01"), new ArrayList<>());
+        userTestThird = new User(null,USERNAME_FOURTH_USER_TEST,NAME_USER_TEST,PASSWORD_USER_TEST,LocalDate.parse("2000-09-01"), new ArrayList<>());
     }
 
     @Test
@@ -107,4 +113,21 @@ class UserTest {
         assertTrue(exception instanceof IllegalArgumentException);
     }
 
+    @Test
+    void whenFindUsersByBirthdateAndCharactersSequence_thenReturnUserList() {
+        //Given
+        List<User> usersMatched = new ArrayList<>();
+        testEntityManager.persist(userTest);
+        usersMatched.add(userTest);
+        testEntityManager.persist(userTestSecond);
+        usersMatched.add(userTestSecond);
+        testEntityManager.persist(userTestThird);
+        testEntityManager.flush();
+
+        //When
+        List<User> usersFound = userRepository.findByBirthdateBetweenAndNameContainsIgnoreCase(LocalDate.parse("2001-01-22"),LocalDate.parse("2005-01-22"),"AVI");
+
+        //Then
+        assertEquals(usersFound,usersMatched);
+    }
 }
