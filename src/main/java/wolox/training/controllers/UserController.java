@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiResponses;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,6 +31,7 @@ import wolox.training.exceptions.responses.UsernameAlreadyTakenException;
 import wolox.training.models.Book;
 import wolox.training.models.User;
 import wolox.training.repositories.UserRepository;
+import wolox.training.security.CustomAuthenticationProvider;
 
 @RestController
 @RequestMapping("/api/users")
@@ -43,6 +45,9 @@ public class UserController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private CustomAuthenticationProvider authProvider;
 
     /**
      * This method is used to get a {@link User} by id.
@@ -251,6 +256,16 @@ public class UserController {
         User isUserCreated = userRepository.findById(idUser).orElseThrow(() -> new UserNotFoundException((USER_NOT_FOUND_MSG)));
         isUserCreated.removeBookToUser(bookToRemove);
         User response = userRepository.save(isUserCreated);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * This method is used to get the information of the current {@link User} log in
+     * @return ResponseEntity with the current logged in {@link User}
+     */
+    @GetMapping("/userLog")
+    public ResponseEntity<User> getUserLog(){
+        User response = userRepository.findByUsername(authProvider.getAuthentication().getName()).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MSG));
         return ResponseEntity.ok(response);
     }
 }
