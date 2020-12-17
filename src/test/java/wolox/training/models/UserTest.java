@@ -1,6 +1,11 @@
 package wolox.training.models;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static wolox.training.contants.ConstantsTest.NAME_SECOND_USER_TEST;
+import static wolox.training.contants.ConstantsTest.NAME_USER_TEST;
+import static wolox.training.contants.ConstantsTest.PASSWORD_USER_TEST;
+import static wolox.training.contants.ConstantsTest.USERNAME_SECOND_USER_TEST;
+import static wolox.training.contants.ConstantsTest.USERNAME_USER_TEST;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -25,14 +30,17 @@ class UserTest {
     @Autowired
     private UserRepository userRepository;
 
+    private User userTest;
+
     @BeforeEach
     void setUp() {
+        userTest = new User(null,USERNAME_SECOND_USER_TEST,NAME_USER_TEST,PASSWORD_USER_TEST,LocalDate.parse("2004-09-25"), new ArrayList<>());
+
     }
 
     @Test
     void whenSaveUser_thenReturnUser() {
         // Given
-        User userTest = new User(null,"Username","David","s3cr3t",LocalDate.parse("2004-09-25"), new ArrayList<>());
         testEntityManager.persist(userTest);
         testEntityManager.flush();
 
@@ -42,13 +50,11 @@ class UserTest {
         //Then
         assertEquals(userSaved.getUsername(),userTest.getUsername());
         assertEquals(userSaved.getName(),userTest.getName());
-        System.out.println("whenSaveUser passed");
     }
 
     @Test
     void whenFindUserByUsername_thenReturnUser() {
         //Given
-        User userTest = new User(null,"Username","David","s3cr3t",LocalDate.parse("2004-09-25"), new ArrayList<>());
         testEntityManager.persist(userTest);
         testEntityManager.flush();;
 
@@ -57,30 +63,27 @@ class UserTest {
 
         //Then
         assertEquals(userFound.getUsername(),userTest.getUsername());
-        System.out.println("whenFindUserByUsername pass");
     }
 
     @Test
     void whenSaveUserWithNameNull_thenThrowException() throws javax.validation.ConstraintViolationException {
         //Given
-        User userTest = new User(null, "iskandar",null,"s3cr3t",LocalDate.parse("1995-01-22"), new ArrayList<>());
+        User userTestNameNull = new User(null, USERNAME_USER_TEST,null,PASSWORD_USER_TEST,LocalDate.parse("1995-01-22"), new ArrayList<>());
 
         //When
         javax.validation.ConstraintViolationException exception = assertThrows(javax.validation.ConstraintViolationException.class, () -> {
-            userRepository.save(userTest);
+            userRepository.save(userTestNameNull);
             testEntityManager.flush();
         });
 
         //Then
         assertTrue(exception instanceof javax.validation.ConstraintViolationException);
-        System.out.println("whenSaveUserWithNameNull passed");
     }
 
     @Test
     void whenSaveUserWithUsernameTaken_thenThrowException() throws ConstraintViolationException {
         //Given
-        User userTest = new User(null, "iskandar","Carlos","s3cr3t",LocalDate.parse("1995-01-22"), new ArrayList<>());
-
+        userTest.setUsername(USERNAME_USER_TEST);
         //When
         PersistenceException exception = assertThrows(PersistenceException.class, () -> {
             userRepository.save(userTest);
@@ -89,15 +92,11 @@ class UserTest {
 
         //Then
         assertTrue(exception.getCause() instanceof ConstraintViolationException);
-        System.out.println("whenSaveUserWithUsernameTaken passed");
     }
 
 
     @Test
     void whenSaveUserWithBirthdayGraterThanActualDate_thenThrowException() throws IllegalArgumentException {
-        //Given
-        User userTest = new User(null,"Undefeated", "David", "s3cr3t",LocalDate.parse("2021-09-25"),new ArrayList<>());
-
         //When
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             userTest.setBirthdate(LocalDate.parse("2021-05-25"));
@@ -106,7 +105,6 @@ class UserTest {
 
         //Then
         assertTrue(exception instanceof IllegalArgumentException);
-        System.out.println("whenSaveUserWithBirthdayGraterThanActualDate passed");
     }
 
 }

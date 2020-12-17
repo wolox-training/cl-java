@@ -1,5 +1,7 @@
 package wolox.training.security;
 
+import static wolox.training.contants.ConstantsMain.USER_NOT_FOUND_MSG;
+
 import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -15,7 +17,6 @@ import wolox.training.repositories.UserRepository;
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
-    private static final String USER_NOT_FOUND_MSG = "Username not found";
 
     @Autowired
     private UserRepository userRepository;

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import wolox.training.exceptions.responses.BookAlreadyOwnException;
+import wolox.training.exceptions.responses.BookAttributeConflict;
 import wolox.training.exceptions.responses.BookIdMismatchException;
 import wolox.training.exceptions.responses.BookNotFoundException;
 import wolox.training.exceptions.responses.UserIdMismatchException;
@@ -78,7 +79,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * This method id used to handler exception of {@link UsernameAlreadyTakenException}
+     * This method id used to handler exception of {@link UsernameAlreadyTakenException,
+     * @link BookAttributeConflict}
      * @param ex: Exception reported (Exception)
      * @param request: Request given by the Web (WebRequest)
      * @return handExceptionInternal with the following attributes:
@@ -88,7 +90,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
      *  response status (HttpStatus.Forbidden),
      *  request (WebRequest).
      */
-    @ExceptionHandler({UsernameAlreadyTakenException.class})
+    @ExceptionHandler({UsernameAlreadyTakenException.class,
+            BookAttributeConflict.class})
     public ResponseEntity<Object> handleUnique (Exception ex,
             WebRequest request) {
         return handleExceptionInternal(ex, ex.getLocalizedMessage(),

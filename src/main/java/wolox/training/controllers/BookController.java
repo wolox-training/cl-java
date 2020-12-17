@@ -1,5 +1,9 @@
 package wolox.training.controllers;
 
+import static wolox.training.contants.ConstantsMain.BOOK_NOT_FOUND_MSG;
+import static wolox.training.contants.ConstantsMain.ID_MISMATCH_MSG;
+import static wolox.training.contants.ConstantsMain.SUCCESSFULLY_BOOK_DELETED_MSG;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -7,7 +11,9 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,22 +25,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import wolox.training.dtos.BookDTO;
 import wolox.training.exceptions.responses.BookIdMismatchException;
 import wolox.training.exceptions.responses.BookNotFoundException;
 import wolox.training.models.Book;
 import wolox.training.repositories.BookRepository;
+import wolox.training.services.OpenLibraryService;
 
 @RestController
 @RequestMapping("/api/books")
 @Api(value = "Book microservice", tags = "This Service REST has a CRUD for Books")
-public class BookController {
+public class BookController{
 
-    private static final String BOOK_NOT_FOUND_MSG = "Book not found";
-    private static final String ID_MISMATCH_MSG = "Book Id mismatched";
-    private static final String SUCCESSFULLY_DELETED_MSG = "Book Successfully Deleted";
 
     @Autowired
     private BookRepository bookRepository;
+
+    @Autowired
+    private OpenLibraryService openLibraryService;
+
 
     /**
      * This method is used to greet someone by the name of by default world.
@@ -51,6 +60,27 @@ public class BookController {
         return "greeting";
     }
 
+    @ApiOperation(value = "Get a book by ISBN", response = BookDTO.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieve book"),
+            @ApiResponse(code = 201, message = "Successfully created book"),
+            @ApiResponse(code = 404, message = "Book not found"),
+            @ApiResponse(code = 409, message = "An attribute present a conflict"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
+    })
+    @GetMapping("/byIsbn")
+    public ResponseEntity<Book> getBookByIsbn(
+            @RequestParam("isbn") String isbn) {
+        Optional<Book> responseOk = bookRepository.findBookByIsbn(isbn);
+        if (responseOk.isPresent()) {
+            return ResponseEntity.ok(responseOk.get());
+        } else {
+            BookDTO responseExternal = openLibraryService.bookInfo(isbn);
+            Book bookToSave = new Book(responseExternal);
+            Book responseCreated = bookRepository.save(bookToSave);
+            return new ResponseEntity<>(responseCreated,HttpStatus.CREATED);
+        }
+    }
 
     /**
      * This method is used to get a {@link Book} by the id.
@@ -62,7 +92,8 @@ public class BookController {
     @ApiOperation(value = "Get a book by ID", response = Book.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieve book"),
-            @ApiResponse(code = 404, message = "Book not found")
+            @ApiResponse(code = 404, message = "Book not found"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(
@@ -82,7 +113,8 @@ public class BookController {
     @ApiOperation(value = "Get a book by Author", response = Book.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully retrieve book"),
-            @ApiResponse(code = 404, message = "Book not found")
+            @ApiResponse(code = 404, message = "Book not found"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @GetMapping
     public ResponseEntity<List<Book>> getAllBooksOrBookByAuthor(
@@ -112,7 +144,8 @@ public class BookController {
      */
     @ApiOperation(value = "Add a book", response = Book.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created book")
+            @ApiResponse(code = 200, message = "Successfully created book"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @PostMapping
     public ResponseEntity<Book> addBook (
@@ -145,7 +178,8 @@ public class BookController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully updated book"),
             @ApiResponse(code = 400, message = "ID of book and ID passed mismatched"),
-            @ApiResponse(code = 404, message = "Book not found")
+            @ApiResponse(code = 404, message = "Book not found"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(
@@ -171,7 +205,8 @@ public class BookController {
     @ApiOperation(value = "Delete a book by ID", response = String.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successfully deleted book"),
-            @ApiResponse(code = 404, message = "Book not found")
+            @ApiResponse(code = 404, message = "Book not found"),
+            @ApiResponse(code = 500, message = "An Internal Error Happened")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBookById (
@@ -179,6 +214,6 @@ public class BookController {
             @PathVariable("id") Long id) {
         Book bookToDelete = bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(BOOK_NOT_FOUND_MSG));
         bookRepository.deleteById(bookToDelete.getId());
-        return ResponseEntity.ok(SUCCESSFULLY_DELETED_MSG);
+        return ResponseEntity.ok(SUCCESSFULLY_BOOK_DELETED_MSG);
     }
 }
