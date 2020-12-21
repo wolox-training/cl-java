@@ -22,6 +22,7 @@ import static wolox.training.contants.ConstantsTest.USERNAME_USER_TEST;
 import static wolox.training.contants.ConstantsTest.YEAR_BOOK_TEST;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,11 +61,13 @@ class UserControllerTest {
 
     @BeforeEach
     private void setUp() {
-        userTest = new User(null,USERNAME_USER_TEST,NAME_USER_TEST, PASSWORD_USER_TEST,LocalDate.parse("2004-09-25"),new ArrayList<>());
+        LocalDate birthdate =LocalDate.parse("2004-09-25");
+        LocalDate birthdateSecond =LocalDate.parse("2000-09-25");
+        userTest = new User(null,USERNAME_USER_TEST,NAME_USER_TEST, PASSWORD_USER_TEST, birthdate,new ArrayList<>());
 
-        userTestId = new User(1L,USERNAME_USER_TEST,NAME_USER_TEST, PASSWORD_USER_TEST,LocalDate.parse("2004-09-25"),new ArrayList<>());
+        userTestId = new User(1L,USERNAME_USER_TEST,NAME_USER_TEST, PASSWORD_USER_TEST,birthdate,new ArrayList<>());
 
-        userTestException = new User(2L,USERNAME_USER_TEST,NAME_SECOND_USER_TEST, PASSWORD_USER_TEST,LocalDate.parse("2000-08-24"),new ArrayList<>());
+        userTestException = new User(2L,USERNAME_USER_TEST,NAME_SECOND_USER_TEST, PASSWORD_USER_TEST,birthdateSecond,new ArrayList<>());
 
         bookTest = new Book(1L,GENRE_BOOK_TEST,AUTHOR_BOOK_TEST, IMAGE_BOOK_TEST, TITLE_BOOK_TEST, SUBTITLE_BOOK_TEST,
                 PUBLISHER_BOOK_TEST,YEAR_BOOK_TEST, PAGES_BOOK_TEST,ISBN_BOOK_TEST);

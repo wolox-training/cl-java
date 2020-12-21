@@ -139,7 +139,7 @@ class BookTest {
 
         //when
         List<Book> booksFound = bookRepository.findByPublisherAndGenreAndYear(
-                bookTest.getPublisher(), bookTest.getGenre(), bookTest.getYear());
+                bookTest.getPublisher(), bookTest.getGenre(),null);
 
         //then
         assertEquals(booksFound,booksTest);
